@@ -38,11 +38,11 @@ class _HomePageState extends State<HomePage> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("🌡️ Temperature: ${sensorData!.temperature}°C",
+                  Text("Temperature: ${sensorData!.temperature}°C",
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text("💧 Humidity: ${sensorData!.humidity}%",
+                  Text("Humidity: ${sensorData!.humidity}%",
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  Text("🔥 Smoke Level: ${sensorData!.smoke}",
+                  Text("Smoke Level: ${sensorData!.smoke}",
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
