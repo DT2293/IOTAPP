@@ -9,7 +9,7 @@ const port = 3000;
 const wsPort = 8080;
 app.use(express.json()); // ✅ Bắt buộc để đọc JSON từ body
 app.use(express.urlencoded({ extended: true })); // Cho phép xử lý dữ liệu form
-const BLYNK_TOKEN = "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"; // Thay bằng Token của bạn
+const BLYNK_TOKEN = "y1uuRJfoya5d-4LuFATabTxi9gRegI0X"; // Thay bằng Token của bạn
 
 app.use(cors());
 const mongoose = require('mongoose');
@@ -119,7 +119,7 @@ const sendData = async (deviceId) => {
 
         // Lưu dữ liệu vào MongoDB
         const dataToSave = new SensorData({
-            deviceId: deviceId, // Đảm bảo deviceId hợp lệ
+           // deviceId: deviceId, // Đảm bảo deviceId hợp lệ
             temperature: newData.temperature,
             humidity: newData.humidity,
             smokeLevel: newData.smoke,
@@ -170,6 +170,10 @@ app.use("/api/auth", authRoutes);
 app.listen(port, () => {
     console.log(`🚀 Server chạy tại http://localhost:${port}`);
     console.log(`📡 WebSocket chạy trên ws://localhost:${wsPort}`);
+});
+server.listen(wsPort, () => {
+    console.log(`🚀 Server HTTP chạy tại http://localhost:${wsPort}`);
+    console.log(`📡 WebSocket chạy tại ws://localhost:${wsPort}`);
 });
 
  

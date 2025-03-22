@@ -1,276 +1,289 @@
 // const express = require("express");
-// const axios = require("axios");
+// const http = require("http");
 // const WebSocket = require("ws");
 // const cors = require("cors");
+// const mongoose = require("mongoose");
+// const jwt = require("jsonwebtoken");
+// require("dotenv").config();
 
+// // Khởi tạo Express app
 // const app = express();
-// const port = 3000;
-// const BLYNK_TOKEN = "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"; // Thay bằng Token thật
+// app.use(express.json());
+// app.use(cors());
 
-// app.use(cors()); // Cho phép gọi API từ Flutter
+// // Kết nối MongoDB
+// mongoose.connect(process.env.MONGO_URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// }).then(() => console.log("✅ Kết nối MongoDB thành công!"))
+//   .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-// // API lấy dữ liệu từ Blynk
-// app.get("/get-data", async (req, res) => {
-//     try {
-//         const temperature = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`);
-//         const humidity = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`);
-//         const smoke = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`);
+// // Routes API
+// app.use("/api/auth", require("./routes/authRoutes"));
+// app.use("/api/devices", require("./routes/deviceRoutes"));
 
-//         const data = {
-//             temperature: parseFloat(temperature.data),
-//             humidity: parseFloat(humidity.data),
-//             smoke: parseInt(smoke.data),
-//         };
-
-//         res.json(data);
-//     } catch (error) {
-//         res.status(500).json({ error: "Lỗi khi lấy dữ liệu từ Blynk" });
-//     }
+// app.get("/", (req, res) => {
+//     res.send("🚀 Server IoT Báo Cháy đã sẵn sàng!");
 // });
 
-// // WebSocket Server để gửi dữ liệu real-time
-// const wss = new WebSocket.Server({ port: 8080 });
+// // Tạo HTTP Server
+// const server = http.createServer(app);
+
+// // 🔥 WebSocket Server
+// const wss = new WebSocket.Server({ server });
+// const clients = new Map();
 
 // wss.on("connection", (ws) => {
 //     console.log("⚡ Client kết nối WebSocket");
 
-//     const sendData = async () => {
+//     ws.on("message", async (message) => {
 //         try {
-//             const temperature = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`);
-//             const humidity = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`);
-//             const smoke = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`);
-
-//             const data = {
-//                 temperature: parseFloat(temperature.data),
-//                 humidity: parseFloat(humidity.data),
-//                 smoke: parseInt(smoke.data),
-//             };
-
-//             ws.send(JSON.stringify(data)); // Gửi dữ liệu real-time đến Flutter
-//         } catch (error) {
-//             console.error("Lỗi khi lấy dữ liệu từ Blynk:", error);
+//             const data = JSON.parse(message);
+//             console.log("📩 Nhận được message:", data);
+    
+//             if (data.type === "authenticate") {
+//                 console.log("🔑 Token nhận được:", data.token);
+    
+//                 // Giải mã token
+//                 const decoded = jwt.verify(data.token, process.env.JWT_SECRET);
+//                 console.log("✅ Token hợp lệ:", decoded);
+    
+//                 ws.userId = decoded.userId;  // Đúng với payload của token
+//                 ws.isAuthenticated = true;
+    
+//                 if (!clients.has(ws.userId)) {
+//                     clients.set(ws.userId, new Set());
+//                 }
+//                 clients.get(ws.userId).add(ws);
+    
+//                 ws.send(JSON.stringify({ type: "auth_success", message: "Xác thực thành công!" }));
+//             }
+//         } catch (err) {
+//             console.error("❌ Lỗi xác thực WebSocket:", err.message);
+//             ws.send(JSON.stringify({ type: "auth_error", message: err.message })); // Gửi lỗi chi tiết về client
 //         }
-//     };
-
-//     sendData();
-//     const interval = setInterval(sendData, 5000); // Gửi dữ liệu mỗi 5s
+//     });
+    
 
 //     ws.on("close", () => {
-//         console.log("⚡ Client ngắt kết nối");
-//         clearInterval(interval);
+//         console.log(`🔴 User ${ws.userId || "chưa xác thực"} ngắt kết nối`);
+//         if (ws.userId && clients.has(ws.userId)) {
+//             clients.get(ws.userId).delete(ws);
+//             if (clients.get(ws.userId).size === 0) {
+//                 clients.delete(ws.userId);
+//             }
+//         }
 //     });
 // });
 
-// app.listen(port, () => {
-//     console.log(`🚀 Server chạy tại http://localhost:${port}`);
+// // Khởi động HTTP + WebSocket Server
+// const PORT = process.env.PORT || 3000;
+// server.listen(PORT, () => {
+//     console.log(`🚀 HTTP Server chạy tại http://localhost:${PORT}`);
+//     console.log(`📡 WebSocket Server chạy tại ws://localhost:${PORT}`);
 // });
 
+
 const express = require("express");
-const axios = require("axios");
+const http = require("http");
 const WebSocket = require("ws");
 const cors = require("cors");
-//const mongoose = require("mongoose");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
 require("dotenv").config();
 
+// Khởi tạo Express app
 const app = express();
-const port = 3000;
-const wsPort = 8080;
-
-const BLYNK_TOKEN = "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"; // Thay bằng Token của bạn
-
+app.use(express.json());
 app.use(cors());
-const mongoose = require('mongoose');
-const MONGO_URI = process.env.MONGO_URI;
 
-mongoose.connect(MONGO_URI, {
+// Kết nối MongoDB
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
 }).then(() => console.log("✅ Kết nối MongoDB thành công!"))
   .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-const sensorSchema = new mongoose.Schema({
-    deviceId: String,
-    temperature: Number,
-    humidity: Number,
-    smokeLevel: Number,
-    timestamp: { type: Date, default: Date.now }
+// Import models
+const User = require("./models/user");
+
+// 🔹 Routes API
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/devices", require("./routes/deviceRoutes"));
+
+app.get("/", (req, res) => {
+    res.send("🚀 Server IoT Báo Cháy đã sẵn sàng!");
 });
 
-const SensorData = mongoose.model('datas', sensorSchema);
+// Tạo HTTP Server
+const server = http.createServer(app);
 
-// API lấy dữ liệu từ Blynk
-app.get("/get-data", async (req, res) => {
+// ====================================================
+// WebSocket Server
+// ====================================================
+const wss = new WebSocket.Server({ server });
+const clients = new Map();
+const previousData = new Map();
+const BLYNK_TOKEN = "y1uuRJfoya5d-4LuFATabTxi9gRegI0X";
+
+// 📡 Lấy dữ liệu từ Blynk
+const fetchData = async (deviceId) => {
     try {
-        const temperature = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`);
-        const humidity = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`);
-        const smoke = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`);
+        const [tempRes, humidRes, smokeRes] = await Promise.all([
+            axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`),
+            axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`),
+            axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`),
+        ]);
 
         const data = {
-            temperature: parseFloat(temperature.data),
-            humidity: parseFloat(humidity.data),
-            smoke: parseInt(smoke.data),
+            deviceId,
+            temperature: parseFloat(tempRes.data),
+            humidity: parseFloat(humidRes.data),
+            smokeLevel: parseInt(smokeRes.data),
         };
 
-        res.json(data);
+        if (isNaN(data.temperature) || isNaN(data.humidity) || isNaN(data.smokeLevel)) {
+            console.warn(`⚠️ Dữ liệu không hợp lệ từ ${deviceId}:`, data);
+            return null;
+        }
+
+        return data;
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi lấy dữ liệu từ Blynk" });
-    }
-});
-
-// WebSocket Server
-const wss = new WebSocket.Server({ port: wsPort });
-const clients = new Set(); // Lưu danh sách client đang kết nối
-let previousData = null; // Lưu dữ liệu lần trước
-
-// Hàm lấy dữ liệu từ Blynk
-const fetchData = async () => {
-    try {
-        const temperature = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`);
-        const humidity = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`);
-        const smoke = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`);
-
-        return {
-            temperature: parseFloat(temperature.data),
-            humidity: parseFloat(humidity.data),
-            smoke: parseInt(smoke.data),
-            
-        };
-    } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu từ Blynk:", error);
+        console.error(`❌ Lỗi lấy dữ liệu từ Blynk (${deviceId}):`, error.message);
         return null;
     }
 };
 
-// Hàm gửi dữ liệu nếu có thay đổi
-// const sendData = async () => {
-//     if (clients.size === 0) return; // Không có client thì không cần gửi dữ liệu
+// Xử lý kết nối WebSocket
+wss.on("connection", async (ws) => {
+    console.log("⚡ Một client vừa kết nối, chờ xác thực...");
 
-//     const newData = await fetchData();
-//     if (!newData) return; // Nếu lỗi khi lấy dữ liệu thì bỏ qua
+    ws.isAuthenticated = false;
 
-//     if (JSON.stringify(newData) !== JSON.stringify(previousData)) {
-//         previousData = newData; // Cập nhật dữ liệu mới
-//         for (const client of clients) {
-//             client.send(JSON.stringify(newData)); // Gửi dữ liệu đến tất cả client
-//         }
-//     }
-// };
-
-const sendData = async () => {
-    if (clients.size === 0) return; // Không có client thì không cần gửi dữ liệu
-
-    const newData = await fetchData();
-    if (!newData) return; // Nếu lỗi khi lấy dữ liệu thì bỏ qua
-
-    if (JSON.stringify(newData) !== JSON.stringify(previousData)) {
-        previousData = newData; // Cập nhật dữ liệu mới
-
-        // Lưu dữ liệu vào MongoDB
-        const dataToSave = new SensorData({
-            deviceId: "ESP32_001", // Thay bằng ID thiết bị thực tế nếu có
-            temperature: newData.temperature,
-            humidity: newData.humidity,
-            smokeLevel: newData.smoke,
-            timestamp : newData.timestamp
-        });
-
+    // Xử lý message từ client
+    ws.on("message", async (message) => {
         try {
-            await dataToSave.save();
-            console.log("✅ Dữ liệu đã được lưu vào MongoDB");
-        } catch (error) {
-            console.error("❌ Lỗi khi lưu dữ liệu vào MongoDB:", error);
-        }
+            const data = JSON.parse(message);
 
-        // Gửi dữ liệu đến tất cả client
-        for (const client of clients) {
-            client.send(JSON.stringify(newData));
+            //Nếu client gửi token để xác thực
+            if (data.type === "authenticate") {
+                try {
+                    const decoded = jwt.verify(data.token, process.env.JWT_SECRET);
+                    const user = await User.findById(decoded.userId).select("-password");
+
+                    if (!user) {
+                        console.error("❌ User không hợp lệ");
+                        ws.send(JSON.stringify({ type: "auth_error", message: "User không hợp lệ!" }));
+                        ws.close();
+                        return;
+                    }
+
+                    console.log(`✅ User ${user.id} đã xác thực WebSocket`);
+                    ws.userId = user.id;
+                    ws.isAuthenticated = true;
+
+                    // 🔹 Lưu WebSocket theo userId
+                    if (!clients.has(user.id)) {
+                        clients.set(user.id, new Set());
+                    }
+                    clients.get(user.id).add(ws);
+
+                    ws.send(JSON.stringify({ type: "auth_success", message: "Xác thực thành công!" }));
+                } catch (err) {
+                    console.error("❌ Token không hợp lệ:", err.message);
+                    ws.send(JSON.stringify({ type: "auth_error", message: "Token không hợp lệ!" }));
+                    ws.close();
+                }
+                return;
+            }
+
+            // Chặn tin nhắn nếu user chưa xác thực
+            if (!ws.isAuthenticated) {
+                ws.send(JSON.stringify({ type: "auth_error", message: "Bạn chưa xác thực!" }));
+                return;
+            }
+
+            const userDevices = await User.findById(ws.userId).select("devices").lean();
+            if (!userDevices || !userDevices.devices.includes(data.deviceId)) {
+                console.warn(`⚠️ User ${ws.userId} không có quyền truy cập deviceId ${data.deviceId}`);
+                return;
+            }
+
+            // if (data.action === "toggleRelay") {
+            //     console.log(`🔁 Điều khiển relay trên ${data.deviceId}: ${data.state}`);
+            //     await axios.get(`https://blynk.cloud/external/api/update?token=${BLYNK_TOKEN}&pin=V0&value=${data.state === "on" ? 1 : 0}`);
+            // }
+
+            if (data.action === "toggleRelay") {
+                console.log(`🔁 Điều khiển relay trên ${data.deviceId}: ${data.state}`);
+                try {
+                    await axios.get(`https://blynk.cloud/external/api/update?token=${BLYNK_TOKEN}&pin=V0&value=${data.state === "on" ? 1 : 0}`);
+                    // Gửi phản hồi sau khi điều khiển relay thành công
+                    ws.send(JSON.stringify({
+                      //  type: "relayStatus",
+                        deviceId: data.deviceId,
+                      //  state: data.state,
+                        message: `Relay đã được ${data.state === "on" ? "bật" : "tắt"}!`
+                    }));
+                } catch (error) {
+                    console.error("❌ Lỗi điều khiển relay:", error.message);
+                    ws.send(JSON.stringify({
+                        type: "relayError",
+                        message: "Không thể điều khiển relay!"
+                    }));
+                }
+            }
+            
+        } catch (err) {
+            console.error("❌ Lỗi xử lý dữ liệu từ client:", err);
+        }
+    });
+
+    // Khi client ngắt kết nối
+    ws.on("close", () => {
+        console.log(`⚡ User ${ws.userId || "chưa xác thực"} ngắt kết nối`);
+        if (ws.userId && clients.has(ws.userId)) {
+            clients.get(ws.userId).delete(ws);
+            if (clients.get(ws.userId).size === 0) {
+                clients.delete(ws.userId);
+            }
+        }
+    });
+
+    // Xử lý lỗi WebSocket
+    ws.on("error", (err) => {
+        console.error(`❌ Lỗi WebSocket: ${err.message}`);
+    });
+});
+
+// Gửi dữ liệu định kỳ mỗi 2 giây
+const sendData = async () => {
+    for (const [userId, userClients] of clients.entries()) {
+        const userDevices = await User.findById(userId).select("devices").lean();
+        if (!userDevices) continue;
+
+        for (const deviceId of userDevices.devices) {
+            const newData = await fetchData(deviceId);
+            if (!newData) continue;
+
+            // 🔹 Chỉ gửi nếu dữ liệu thay đổi
+            if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
+                previousData.set(deviceId, newData);
+                for (const client of userClients) {
+                    client.send(JSON.stringify({ type: "sensordatas", data: newData }));
+                }
+            }
         }
     }
 };
 
+// Chạy sendData mỗi 2 giây
+setInterval(sendData, 2000);
 
-// Lặp lại việc gửi dữ liệu mỗi 2 giây
-const interval = setInterval(sendData, 2000);
-
-wss.on("connection", (ws) => {
-    console.log("⚡ Client kết nối WebSocket");
-    clients.add(ws);
-
-    ws.on("close", () => {
-        console.log("⚡ Client ngắt kết nối");
-        clients.delete(ws);
-    });
+// 🚀 Khởi động HTTP + WebSocket Server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`🚀 HTTP Server chạy tại http://localhost:${PORT}`);
+    console.log(`📡 WebSocket Server chạy tại ws://localhost:${PORT}`);
 });
-
-//console.log(`📡 WebSocket chạy trên ws://localhost:${wsPort}`);
-
-// const sendData = async () => {
-    //     try {
-    //         const temperature = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`);
-    //         const humidity = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`);
-    //         const smoke = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`);
-
-    //         const data = {
-    //             temperature: parseFloat(temperature.data),
-    //             humidity: parseFloat(humidity.data),
-    //             smoke: parseInt(smoke.data),
-    //         };
-
-    //         ws.send(JSON.stringify(data)); // Gửi dữ liệu real-time đến Flutter
-    //     } catch (error) {
-    //         console.error("Lỗi khi lấy dữ liệu từ Blynk:", error);
-    //     }
-    // };
-
-
-// const wss = new WebSocket.Server({ port: wsPort });
-
-// wss.on("connection", (ws) => {
-//     console.log("⚡ Client kết nối WebSocket");
-
-   
-
-//     let previousData = { temperature: null, humidity: null, smoke: null };
-
-// const sendData = async () => {
-//     try {
-//         const temperature = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`);
-//         const humidity = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`);
-//         const smoke = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V3`);
-
-//         const newData = {
-//             temperature: parseFloat(temperature.data),
-//             humidity: parseFloat(humidity.data),
-//             smoke: parseInt(smoke.data),
-//         };
-
-//         if (
-//             newData.temperature !== previousData.temperature ||
-//             newData.humidity !== previousData.humidity ||
-//             newData.smoke !== previousData.smoke
-//         ) {
-//             ws.send(JSON.stringify(newData));
-//             previousData = newData; // Cập nhật giá trị mới
-//         }
-//     } catch (error) {
-//         console.error("Lỗi khi lấy dữ liệu từ Blynk:", error);
-//     }
-// };
-
-
-//     sendData();
-//     const interval = setInterval(sendData, 2000); // Gửi dữ liệu mỗi 5s
-
-//     ws.on("close", () => {
-//         console.log("⚡ Client ngắt kết nối");
-//         clearInterval(interval);
-//     });
-// });
-
-// Khởi động server Express
-app.listen(port, () => {
-    console.log(`🚀 Server chạy tại http://localhost:${port}`);
-    console.log(`📡 WebSocket chạy trên ws://localhost:${wsPort}`);
-});
-
- 

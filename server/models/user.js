@@ -11,13 +11,15 @@
 // module.exports = User;
 
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 
 const userSchema = new mongoose.Schema({
+    userId: { type: String, required: true, unique: true, default: () => uuidv4() },  // Sinh ngẫu nhiên
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "devices" }] // Tham chiếu đúng bảng devices
+    devices: [{ type: String, ref: "devices" }]  // Tham chiếu deviceId dạng String (địa chỉ MAC)
 });
 
-const User = mongoose.model("users", userSchema); // Phải khớp với bảng trong MongoDB
+const User = mongoose.model("users", userSchema);
 module.exports = User;

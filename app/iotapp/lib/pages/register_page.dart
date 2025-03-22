@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iotapp/pages/login_page.dart';
 import 'package:iotapp/services/auth_service.dart';
-
 class RegisterPage extends StatefulWidget {
   @override
   _RegisterPageState createState() => _RegisterPageState();

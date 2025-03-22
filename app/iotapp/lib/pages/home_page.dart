@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iotapp/pages/devicedetail_page.dart';
+import 'package:iotapp/pages/profile_page.dart';
 import '../services/auth_service.dart';
 import 'login_page.dart';
 
@@ -99,7 +99,32 @@ class _HomePageState extends State<HomePage> {
                   ListTile(
                     leading: Icon(Icons.person, color: Colors.blue),
                     title: Text("Hồ sơ cá nhân"),
-                    onTap: () {},
+                    onTap: () async {
+                      // Lấy token và thông tin người dùng
+                      String? token = await _authService.getToken();
+                      Map<String, dynamic>? userData =
+                          await _authService.getUserInfo();
+
+                      if (userData != null && token != null) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfilePage(
+                              userId: userData["userId"] ?? "",
+                              username: userData["username"] ?? "",
+                              email: userData["email"] ?? "",
+                              token: token,
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text("Không lấy được thông tin người dùng!")),
+                        );
+                      }
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.settings, color: Colors.blue),
@@ -139,15 +164,28 @@ class _HomePageState extends State<HomePage> {
                           child: ListTile(
                             leading: Icon(Icons.devices, color: Colors.green),
                             title: Text("Thiết bị: ${_devices[index]}"),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DeviceDetailPage(
-                                      deviceId:
-                                          _devices[index]), // ✅ Truyền deviceId
-                                ),
-                              );
+                            onTap: () async {
+                              String? userToken = await _authService.getToken();
+
+                              if (userToken != null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DeviceDetailPage(
+                                      deviceId: _devices[
+                                          index], // ✅ Truyền deviceId đúng
+                                      userToken:
+                                          userToken, // ✅ Truyền token vào DeviceDetailPage
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          "Không tìm thấy token, vui lòng đăng nhập lại!")),
+                                );
+                              }
                               print("Nhấn vào thiết bị: ${_devices[index]}");
                             },
                           ),
