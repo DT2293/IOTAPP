@@ -194,7 +194,13 @@ wss.on("connection", async (ws) => {
                     console.error("❌ Token không hợp lệ:", err.message);
                     ws.send(JSON.stringify({ type: "auth_error", message: "Token không hợp lệ!" }));
                     ws.close();
-                }
+                }          
+
+
+
+
+
+                
                 return;
             }
 
