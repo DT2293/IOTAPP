@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.7:3000/api/auth'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.15:3000/api/auth'));
  //  String? userId = await getUserId();
 
   Future<bool> login(String email, String password) async {

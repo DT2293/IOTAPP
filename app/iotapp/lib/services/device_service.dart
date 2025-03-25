@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DeviceService {
- final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.7:3000/api'));
+ final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.1.15:3000/api'));
 
   Future<Map<String, dynamic>?> getDeviceById(String deviceId) async {
     try {
