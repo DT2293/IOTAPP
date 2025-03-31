@@ -1,13 +1,14 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
 const User = require("../models/user");
+const { generateId } = require("../models/configs");
 const authMiddleware = require("../middleware/authMiddleware");
+require("dotenv").config();
 
-const router = express.Router({ strict: false }); 
+const router = express.Router({ strict: false });
 
-// Đăng ký
+// 📌 Đăng ký người dùng
 router.post("/register", async (req, res) => {
     try {
         let { username, email, password } = req.body;
@@ -15,24 +16,18 @@ router.post("/register", async (req, res) => {
         email = email.toLowerCase().trim();
         username = username.toLowerCase().trim();
 
-        // Kiểm tra nếu email hoặc username đã tồn tại
-        const existingUser = await User.findOne({
-            $or: [{ email }, { username }]
-        });
-
+        const existingUser = await User.findOne({ $or: [{ email }, { username }] });
         if (existingUser) {
             return res.status(400).json({
-                error: existingUser.email === email
-                    ? "Email đã được sử dụng!"
-                    : "Username đã được sử dụng!"
+                error: existingUser.email === email ? "Email đã được sử dụng!" : "Username đã được sử dụng!"
             });
         }
 
-        // Mã hóa mật khẩu và tạo userId ngẫu nhiên
         const hashedPassword = await bcrypt.hash(password, 10);
-        const userId = uuidv4();
+        const userId = await generateId("User");
 
-        // Tạo user mới
+        if (!userId) return res.status(500).json({ error: "Không thể tạo userId!" });
+
         const newUser = new User({ userId, username, email, password: hashedPassword });
         await newUser.save();
 
@@ -43,23 +38,19 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// Đăng nhập
+// 📌 Đăng nhập
 router.post("/login", async (req, res) => {
     try {
         let { username, email, password } = req.body;
-
         const query = email ? { email: email.toLowerCase().trim() } : { username: username.toLowerCase().trim() };
         const user = await User.findOne(query);
 
         if (!user) return res.status(401).json({ error: "Sai email hoặc mật khẩu!" });
 
-        // Kiểm tra mật khẩu
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: "Sai email hoặc mật khẩu!" });
 
-        // Tạo token JWT chứa userId kiểu string
-        //const token = jwt.sign({ userId: user.userId }, "SECRET_KEY", { expiresIn: "7d" });
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
         res.json({ message: "Đăng nhập thành công!", token, user });
     } catch (error) {
@@ -68,27 +59,19 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Cập nhật thông tin user
+// 📌 Cập nhật thông tin user
 router.put("/update/:userId", authMiddleware, async (req, res) => {
     try {
         const { username, email } = req.body;
         const { userId } = req.params;
 
-        // Kiểm tra userId có trùng khớp với user đã đăng nhập
-        if (userId !== req.user.userId) {
+        if (parseInt(userId) !== req.user.userId) {
             return res.status(403).json({ error: "Bạn không có quyền cập nhật thông tin này!" });
         }
 
-        // Kiểm tra tính hợp lệ của userId
-        if (!userId || typeof userId !== "string") {
-            return res.status(400).json({ error: "userId không hợp lệ!" });
-        }
-
-        // Truy vấn user theo userId UUID string
         const user = await User.findOne({ userId });
         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
 
-        // Cập nhật thông tin người dùng
         if (username) user.username = username;
         if (email) user.email = email.toLowerCase().trim();
 
@@ -100,16 +83,11 @@ router.put("/update/:userId", authMiddleware, async (req, res) => {
     }
 });
 
-
-// Đổi mật khẩu
+// 📌 Đổi mật khẩu
 router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
         const { userId } = req.params;
-
-        if (!userId || typeof userId !== "string") {
-            return res.status(400).json({ error: "userId không hợp lệ!" });
-        }
 
         const user = await User.findOne({ userId });
         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
@@ -127,18 +105,11 @@ router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
     }
 });
 
-// Lấy thông tin người dùng
-// Lấy thông tin người dùng theo userId và populate devices dựa trên deviceId (MAC Address)
+// 📌 Lấy thông tin người dùng kèm thiết bị (✅ Fix lỗi populate)
 router.get("/users/:userId", authMiddleware, async (req, res) => {
     try {
         const { userId } = req.params;
-
-        const user = await User.findOne({ userId }).populate({
-            path: "devices",
-            model: "devices",
-            localField: "devices",   // Trường trong User schema (dạng string)
-            foreignField: "deviceId" // Trường trong Device schema (dạng string)
-        });
+        const user = await User.findOne({ userId }).populate("devices");
 
         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
 
@@ -149,10 +120,7 @@ router.get("/users/:userId", authMiddleware, async (req, res) => {
     }
 });
 
-
-
-
-// Lấy thông tin profile đăng nhập
+// 📌 Lấy thông tin profile
 router.get("/profile", authMiddleware, async (req, res) => {
     try {
         const user = await User.findOne({ userId: req.user.userId }).select("-password");
@@ -164,8 +132,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
     }
 });
 
-
-// Đăng xuất
+// 📌 Đăng xuất
 router.post("/logout", (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
     res.json({ message: "Đăng xuất thành công!" });

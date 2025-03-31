@@ -92,6 +92,8 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 require("dotenv").config();
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
 
 // Khởi tạo Express app
 const app = express();
@@ -284,6 +286,7 @@ setInterval(sendData, 2000);
 // 🚀 Khởi động HTTP + WebSocket Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
+    console.log('hello')
     console.log(`🚀 HTTP Server chạy tại http://localhost:${PORT}`);
     console.log(`📡 WebSocket Server chạy tại ws://localhost:${PORT}`);
 });

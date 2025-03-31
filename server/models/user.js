@@ -1,25 +1,22 @@
-// const mongoose = require("mongoose");
-
-// const userSchema = new mongoose.Schema({
-//     username: { type: String, required: true },
-//     email: { type: String, required: true, unique: true },
-//     password: { type: String, required: true },
-//     devices: [{ type: mongoose.Schema.Types.ObjectId, ref: "Device" }] // Dùng ObjectId để tham chiếu đến Device
-// });
-
-// const User = mongoose.model("users", userSchema);
-// module.exports = User;
-
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
+const { generateId } = require("../models/configs");
 
 const userSchema = new mongoose.Schema({
-    userId: { type: String, required: true, unique: true, default: () => uuidv4() },  // Sinh ngẫu nhiên
+    userId: { type: Number, unique: true },  // 🔹 Đảm bảo là Number
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    devices: [{ type: String, ref: "devices" }]  // Tham chiếu deviceId dạng String (địa chỉ MAC)
+    devices: [{ type: Number, ref: "devices" }]
 });
 
-const User = mongoose.model("users", userSchema);
+// ✅ Kiểm tra kỹ lưỡng userId
+userSchema.pre("save", async function (next) {
+    if (!this.userId || typeof this.userId !== "number") {
+        const newId = await generateId();
+        this.userId = newId;
+    }
+    next();
+});
+
+const User = mongoose.model("User", userSchema, "users");
 module.exports = User;
