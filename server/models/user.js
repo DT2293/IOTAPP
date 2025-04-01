@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { generateId } = require("../models/configs");
 
 const userSchema = new mongoose.Schema({
-    userId: { type: Number, unique: true },  // 🔹 Đảm bảo là Number
+    userId: { type: Number, unique: true },  
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },

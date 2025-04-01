@@ -4,7 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const SensorData = require("./models/SensorData");
+//const SensorData = require("./models/SensorData");
 const User = require("./models/user"); // ⚠️ Thêm import model User
 const authMiddleware = require("./middleware/authMiddleware");
 

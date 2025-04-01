@@ -122,33 +122,27 @@ const express = require("express");
 const router = express.Router();
 const Device = require("../models/Device");
 const User = require("../models/user");
-const { generateId } = require("../utils/count"); // ✅ Thêm hàm generateId
+const { generateId } = require("../models/configs"); // ✅ Thêm hàm generateId
 const authMiddleware = require("../middleware/authMiddleware");
 
 // 🔹 Thêm thiết bị mới
+//const { generateId } = require("../models/configs"); 
+
+// Trong route thêm thiết bị mới
 router.post("/", authMiddleware, async (req, res) => {
     try {
         const userId = req.user.userId;
         const { deviceName, location, active } = req.body;
 
-        // Kiểm tra user có tồn tại không
         const user = await User.findOne({ userId });
         if (!user) return res.status(404).json({ error: "Không tìm thấy User" });
 
-        // Tạo deviceId tự động
+        // 🔥 Sử dụng counter riêng cho Device
         const deviceId = await generateId("Device");
-        if (!deviceId) return res.status(500).json({ error: "Không thể tạo deviceId!" });
 
-        // Tạo mới thiết bị
-        const newDevice = new Device({
-            deviceId,
-            userId,
-            deviceName,
-            location,
-            active
-        });
-
+        const newDevice = new Device({ deviceId, userId, deviceName, location, active });
         await newDevice.save();
+
         user.devices.push(newDevice.deviceId);
         await user.save();
 
@@ -159,14 +153,19 @@ router.post("/", authMiddleware, async (req, res) => {
     }
 });
 
+
 // 🔹 Lấy thông tin thiết bị theo deviceId
 router.get("/:deviceId", authMiddleware, async (req, res) => {
     try {
-        const { deviceId } = req.params;
-        const device = await Device.findOne({ deviceId }).populate("userId", "username email");
+        const deviceId = Number(req.params.deviceId);
+        const device = await Device.findOne({ deviceId });
 
         if (!device) return res.status(404).json({ error: "Không tìm thấy thiết bị" });
-        res.json(device);
+
+        // Tìm user theo userId (vì userId trong Device là Number)
+        const user = await User.findOne({ userId: device.userId }).select("username email");
+
+        res.json({ ...device.toObject(), user });
     } catch (error) {
         console.error("Lỗi khi lấy thiết bị:", error);
         res.status(500).json({ error: "Lỗi máy chủ khi lấy thiết bị" });
@@ -176,8 +175,8 @@ router.get("/:deviceId", authMiddleware, async (req, res) => {
 // 🔹 Cập nhật thiết bị theo deviceId
 router.put("/:deviceId", authMiddleware, async (req, res) => {
     try {
+        const deviceId = Number(req.params.deviceId); // Ép kiểu
         const { deviceName, location, active } = req.body;
-        const { deviceId } = req.params;
 
         const existingDevice = await Device.findOne({ deviceId });
         if (!existingDevice) return res.status(404).json({ error: "Không tìm thấy thiết bị" });
@@ -194,11 +193,12 @@ router.put("/:deviceId", authMiddleware, async (req, res) => {
     }
 });
 
+
 // 🔹 Xóa thiết bị theo deviceId
 router.delete("/:deviceId", authMiddleware, async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { deviceId } = req.params;
+        const deviceId = Number(req.params.deviceId); // Ép kiểu
 
         const deletedDevice = await Device.findOneAndDelete({ deviceId, userId });
         if (!deletedDevice) return res.status(404).json({ error: "Không tìm thấy thiết bị của user này" });
