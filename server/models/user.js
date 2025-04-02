@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 const { generateId } = require("../models/configs");
 
@@ -6,7 +7,7 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    devices: [{ type: Number, ref: "devices" }]
+    devices: [{ type: String, ref: "devices" }]// Đổi kiểu thành String để phù hợp với deviceId từ Blynk
 });
 
 // ✅ Kiểm tra kỹ lưỡng userId
@@ -18,5 +19,5 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-const User = mongoose.model("User", userSchema, "users");
+const User = mongoose.model("User", userSchema);
 module.exports = User;
