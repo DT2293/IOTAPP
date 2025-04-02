@@ -9,7 +9,7 @@ require("dotenv").config();
 
 const router = express.Router({ strict: false });
 
-// 📌 Đăng ký người dùng
+// Đăng ký người dùng
 router.post("/register", async (req, res) => {
     try {
         let { username, email, password } = req.body;
@@ -39,7 +39,7 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// 📌 Đăng nhập
+//  Đăng nhập
 router.post("/login", async (req, res) => {
     try {
         let { username, email, password } = req.body;
@@ -60,7 +60,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// 📌 Cập nhật thông tin user
+// Cập nhật thông tin user
 router.put("/update/:userId", authMiddleware, async (req, res) => {
     try {
         const { username, email } = req.body;
@@ -90,8 +90,7 @@ router.put("/update/:userId", authMiddleware, async (req, res) => {
     }
 });
 
-
-// 📌 Đổi mật khẩu
+//Đổi mật khẩu
 router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
