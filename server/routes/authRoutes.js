@@ -46,10 +46,10 @@ router.post("/login", async (req, res) => {
         const query = email ? { email: email.toLowerCase().trim() } : { username: username.toLowerCase().trim() };
         const user = await User.findOne(query);
 
-        if (!user) return res.status(401).json({ error: "Sai email hoặc mật khẩu!" });
+        if (!user) return res.status(401).json({ error: "Sai tài khoản đăng nhập" });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ error: "Sai email hoặc mật khẩu!" });
+        if (!isMatch) return res.status(401).json({ error: "Sai mật khẩu!" });
 
         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
@@ -136,14 +136,16 @@ router.get("/users/:userId", authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng" });
     }
 });
-
-// 📌 Lấy thông tin profile
+    
 router.get("/profile", authMiddleware, async (req, res) => {
     try {
-        const userId = req.user.userId; // 🔹 Lấy userId từ token
+        let userId = req.user.userId;
 
-        // Nếu userId là ObjectId, cần chuyển đổi trước khi truy vấn
-        const user = await User.findById(userId).select("-password");
+        if (isNaN(userId)) {
+            return res.status(400).json({ error: "userId không hợp lệ!" });
+        }
+
+        const user = await User.findOne({ userId }).select("-password");
 
         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
 
@@ -154,6 +156,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
     }
 });
 
+
 // 🔹 Cấu hình dịch vụ gửi email
 const transporter = nodemailer.createTransport({
     service: "gmail",  // Gmail service
@@ -162,8 +165,8 @@ const transporter = nodemailer.createTransport({
         pass: process.env.SMTP_PASS,  // Lấy pass từ .env
     },
 });
+const otpStore = new Map(); // In-memory store: email -> { otp, expiresAt }
 
-// 📌 API Quên Mật Khẩu
 router.post("/forgot-password", async (req, res) => {
     try {
         const { email } = req.body;
@@ -171,88 +174,73 @@ router.post("/forgot-password", async (req, res) => {
 
         if (!user) return res.status(404).json({ error: "Email chưa được đăng ký!" });
 
-        // 🔹 Tạo mật khẩu mới ngẫu nhiên
-        const newPassword = Math.random().toString(36).slice(-8); // Mật khẩu mới ngẫu nhiên
-        const hashedPassword = await bcrypt.hash(newPassword, 10);  // Mã hóa mật khẩu mới
+        // 🔹 Tạo mã OTP 6 chữ số
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 60 * 1000; // OTP có hiệu lực 1 phút
 
-        // 🔹 Cập nhật mật khẩu mới vào database
-        user.password = hashedPassword;
-        await user.save();
+        otpStore.set(email, { otp, expiresAt });
 
         // 🔹 Cấu hình email gửi đi
         const mailOptions = {
-            from: `"${process.env.SMTP_SENDER_NAME}" <${process.env.SMTP_SENDER_EMAIL}>`, // Hiển thị tên người gửi mà không hiển thị email cá nhân
-            to: user.email, // Email người nhận
-            subject: "Khôi phục mật khẩu", // Tiêu đề email
+            from: `"${process.env.SMTP_SENDER_NAME}" <${process.env.SMTP_SENDER_EMAIL}>`,
+            to: user.email,
+            subject: "Mã OTP đăng nhập",
             html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Khôi phục mật khẩu</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f4f4f4;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    .container {
-                        width: 100%;
-                        max-width: 600px;
-                        margin: 20px auto;
-                        background-color: #ffffff;
-                        padding: 20px;
-                        border-radius: 8px;
-                        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-                        text-align: center;
-                    }
-                    h2 {
-                        color: #333;
-                    }
-                    p {
-                        font-size: 16px;
-                        color: #555;
-                        line-height: 1.6;
-                    }
-                    .password {
-                        font-size: 18px;
-                        font-weight: bold;
-                        color: #d9534f;
-                        background: #f8d7da;
-                        padding: 10px;
-                        border-radius: 5px;
-                        display: inline-block;
-                        margin: 10px 0;
-                    }
-                    .footer {
-                        margin-top: 20px;
-                        font-size: 14px;
-                        color: #777;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h2>Khôi phục mật khẩu thành công!</h2>
-                    <p>Xin chào,</p>
-                    <p>Bạn đã yêu cầu đặt lại mật khẩu của mình. Dưới đây là mật khẩu mới của bạn:</p>
-                    <div class="password">${newPassword}</div>
-                    <p>Vui lòng đăng nhập và đổi mật khẩu ngay để đảm bảo an toàn cho tài khoản của bạn.</p>
-                </div>
-            </body>
-            </html>`
+            <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center">
+                <h2>Xác thực đăng nhập</h2>
+                <p>Mã OTP của bạn là:</p>
+                <div style="font-size: 24px; font-weight: bold; color: #2c3e50">${otp}</div>
+                <p>Mã có hiệu lực trong vòng 1 phút.</p>
+            </div>
+            `
         };
 
         await transporter.sendMail(mailOptions);
 
-        res.json({ message: "Mật khẩu mới đã được gửi đến email của bạn!" });
+        res.json({ message: "Mã OTP đã được gửi đến email của bạn!" });
     } catch (error) {
-        console.error("Lỗi quên mật khẩu:", error);
-        res.status(500).json({ error: "Lỗi khi xử lý yêu cầu quên mật khẩu" });
+        console.error("Lỗi gửi OTP:", error);
+        res.status(500).json({ error: "Không thể gửi OTP" });
     }
 });
+
+// Route: /verify-otp
+router.post("/verify-otp", async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        const stored = otpStore.get(email);
+
+        if (!stored || stored.otp !== otp || Date.now() > stored.expiresAt) {
+            return res.status(400).json({ error: "OTP không hợp lệ hoặc đã hết hạn!" });
+        }
+
+        // ✅ Tìm lại user
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (!user) return res.status(404).json({ error: "Người dùng không tồn tại!" });
+
+        otpStore.delete(email); // Xóa OTP sau khi dùng
+
+        // ✅ Tạo tokenonPressed: otpController.text.trim().length == 6 ? _verifyOtp : null,
+
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        res.json({ message: "Xác thực thành công!", token, user });
+    } catch (error) {
+        console.error("Lỗi xác thực OTP:", error);
+        res.status(500).json({ error: "Lỗi khi xác thực OTP" });
+    }
+});
+
+router.post('/reset-password', async (req, res) => {
+    const { email, newPassword } = req.body;
+  
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'Email không tồn tại' });
+  
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+  
+    res.json({ message: 'Đặt lại mật khẩu thành công' });
+  });
 // 📌 Đăng xuất
 router.post("/logout", (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
