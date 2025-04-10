@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DeviceDetailPage extends StatefulWidget {
   final String deviceId;
@@ -21,11 +23,22 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
   bool _relayState = false;
   Timer? _timeoutTimer;
 
+  Future<void> saveRelayStatus(bool status) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('relayStatus', status);
+  }
+
+  Future<bool> loadRelayStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('relayStatus') ?? false;
+  }
+
   @override
   void initState() {
     super.initState();
     _connectWebSocket();
     _startTimeout();
+    _loadRelayStatus();
   }
 
   void _startTimeout() {
@@ -40,7 +53,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
   }
 
   void _connectWebSocket() {
-    _channel = WebSocketChannel.connect(Uri.parse("ws://192.168.1.15:3000"));
+    _channel = WebSocketChannel.connect(Uri.parse("ws://dungtc.iothings.vn:3000"));
 
     final authMessage = jsonEncode({
       "type": "authenticate",
@@ -104,6 +117,15 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
 
     print("🚀 Gửi lệnh relay: $command");
     _channel.sink.add(command);
+
+    saveRelayStatus(newState);
+  }
+
+  void _loadRelayStatus() async {
+    bool status = await loadRelayStatus();
+    setState(() {
+      _relayState = status;
+    });
   }
 
   @override
@@ -116,9 +138,14 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Thông tin thiết bị")),
+      appBar: AppBar(title: Text(tr("device_info"))),
       body: !_isAuthorized
-          ? Center(child: Text("🚫 Không có quyền truy cập!", style: TextStyle(color: Colors.red, fontSize: 16)))
+          ? Center(
+              child: Text(
+                tr("user_info_error"),
+                style: TextStyle(color: Colors.red, fontSize: 16),
+              ),
+            )
           : _deviceData == null
               ? Center(child: CircularProgressIndicator())
               : Padding(
@@ -131,14 +158,27 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                           children: [
-                            _buildSensorCard("Nhiệt độ", _deviceData!['temperature'] != null ? "${_deviceData!['temperature']}°C" : "--", Colors.orange),
-                            _buildSensorCard("Độ ẩm", _deviceData!['humidity'] != null ? "${_deviceData!['humidity']}%" : "--", Colors.blue),
-                            _buildSensorCard("Mức khói", _deviceData!['smokeLevel'] != null ? "${_deviceData!['smokeLevel']}" : "--", Colors.red, isDanger: true),
+                            _buildSensorCard(
+                              tr("temperature"),
+                              _deviceData!['temperature'] != null ? "${_deviceData!['temperature']}°C" : "--",
+                              Colors.orange,
+                            ),
+                            _buildSensorCard(
+                              tr("humidity"),
+                              _deviceData!['humidity'] != null ? "${_deviceData!['humidity']}%" : "--",
+                              Colors.blue,
+                            ),
+                            _buildSensorCard(
+                              tr("smoke_level"),
+                              _deviceData!['smokeLevel'] != null ? "${_deviceData!['smokeLevel']}" : "--",
+                              Colors.red,
+                              isDanger: true,
+                            ),
                           ],
                         ),
                       ),
                       SwitchListTile(
-                        title: Text("🔌 Điều khiển relay"),
+                        title: Text("🔌 ${tr("control_relay")}"),
                         value: _relayState,
                         onChanged: _toggleRelay,
                         activeColor: Colors.green,

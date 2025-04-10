@@ -1,153 +1,181 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:iotapp/pages/login_page.dart';
+import 'package:iotapp/pages/updatepassword_page.dart';
+import 'package:iotapp/services/auth_service.dart';
+import 'package:iotapp/services/language_service.dart';
+import 'package:iotapp/theme/theme_provider.dart';
+import 'package:provider/provider.dart';
 
-class SettingsPage extends StatefulWidget {
-//   @override
-//   _SettingsPageState createState() => _SettingsPageState();
-// }
 
-// class _SettingsPageState extends State<SettingsPage> {
-//   bool _darkMode = false;
-//   String _selectedLanguage = "Tiếng Việt"; // Ngôn ngữ mặc định
-
-//   final List<String> _languages = ["Tiếng Việt", "English", "Español", "Français"];
-
-final Function(bool) onToggleDarkMode;
-
-  SettingsPage({required this.onToggleDarkMode});
+class SettingPage extends StatefulWidget {
 
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  _SettingPageState createState() => _SettingPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  bool _darkMode = false;
-   String _selectedLanguage = "Tiếng Việt"; // Ngôn ngữ mặc định
+class _SettingPageState extends State<SettingPage> {
+    final AuthService _authService = AuthService();
+  bool isDarkMode = false;
+  String appVersion = '';
 
-  final List<String> _languages = ["Tiếng Việt", "English", "Español", "Français"];
   @override
   void initState() {
     super.initState();
-    _loadDarkMode();
   }
 
-  void _loadDarkMode() async {
-    setState(() {
-      _darkMode = Theme.of(context).brightness == Brightness.dark;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Cài đặt"),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          _buildSectionTitle("Tài khoản"),
-          _buildListTile(
-            icon: Icons.person,
-            title: "Chỉnh sửa hồ sơ",
-            onTap: () {
-              // Điều hướng đến trang chỉnh sửa hồ sơ
-            },
-          ),
-          _buildListTile(
-            icon: Icons.lock,
-            title: "Đổi mật khẩu",
-            onTap: () {
-              // Điều hướng đến trang đổi mật khẩu
-            },
-          ),
-
-          SizedBox(height: 16),
-          _buildSectionTitle("Cài đặt ứng dụng"),
-          
-          // ✅ Chuyển đổi Dark Mode
-         SwitchListTile(
-            title: Text("Chế độ tối"),
-            secondary: Icon(Icons.dark_mode),
-            value: _darkMode,
-            onChanged: (value) {
-              setState(() {
-                _darkMode = value;
-              });
-              widget.onToggleDarkMode(value);
-            },
-          ),
-
-          // ✅ Chuyển đổi ngôn ngữ
-          ListTile(
-            leading: Icon(Icons.language, color: Colors.blue),
-            title: Text("Ngôn ngữ"),
-            trailing: DropdownButton<String>(
-              value: _selectedLanguage,
-              items: _languages.map((String lang) {
-                return DropdownMenuItem<String>(
-                  value: lang,
-                  child: Text(lang),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    _selectedLanguage = newValue;
-                  });
-                }
-              },
-            ),
-          ),
-
-          SizedBox(height: 16),
-          _buildSectionTitle("Thông tin"),
-          _buildListTile(
-            icon: Icons.info,
-            title: "Giới thiệu ứng dụng",
-            onTap: () {
-              // Điều hướng đến trang thông tin ứng dụng
-            },
-          ),
-          _buildListTile(
-            icon: Icons.policy,
-            title: "Chính sách bảo mật",
-            onTap: () {
-              // Điều hướng đến trang chính sách bảo mật
-            },
-          ),
-
-          SizedBox(height: 16),
-          Divider(),
-          _buildListTile(
-            icon: Icons.logout,
-            title: "Đăng xuất",
-            color: Colors.red,
-            onTap: () {
-              // Xử lý đăng xuất
-            },
-          ),
-        ],
-      ),
+  void _logout() async {
+    await _authService.logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(title,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700])),
     );
   }
 
-  Widget _buildListTile({required IconData icon, required String title, Color? color, required VoidCallback onTap}) {
-    return ListTile(
-      leading: Icon(icon, color: color ?? Colors.blue),
-      title: Text(title, style: TextStyle(fontSize: 16)),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap,
+  @override
+  Widget build(BuildContext context) {
+    Locale currentLocale = context.locale;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(tr('settings')),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          _buildSectionTitle(tr('general')),
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.language, color: Theme.of(context).colorScheme.primary),
+                  title: Text(tr('language')),
+                  trailing: DropdownButtonHideUnderline(
+                    child: DropdownButton<Locale>(
+                      value: currentLocale,
+                      onChanged: (Locale? locale) {
+                        if (locale != null) {
+                          LanguageService.changeLanguage(context, locale);
+                        }
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: Locale('en', 'US'),
+                          child: Text('English'),
+                        ),
+                        DropdownMenuItem(
+                          value: Locale('vi', 'VN'),
+                          child: Text('Tiếng Việt'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+               SwitchListTile(
+  secondary: Icon(Icons.brightness_6_outlined,
+      color: Theme.of(context).colorScheme.primary),
+  title: Text(tr('dark_mode')),
+  value: context.watch<ThemeProvider>().isDarkMode,
+  onChanged: (bool value) {
+    context.read<ThemeProvider>().toggleTheme(value);
+  },
+),
+
+              ],
+            ),
+          ),
+
+          _buildSectionTitle(tr('account')),
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.lock_outline, color: Colors.orange),
+                  title: Text(tr('change_password')),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UpdatePasswordPage()),
+                ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.logout, color: Colors.redAccent),
+                  title: Text(tr('logout')),
+                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: _logout,
+                ),
+              ],
+            ),
+          ),
+
+          _buildSectionTitle(tr('about')),
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: ListTile(
+              leading: Icon(Icons.info_outline, color: Colors.blue),
+              title: Text(tr('app_version')),
+              subtitle: Text(appVersion),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+
+
+// import 'package:flutter/material.dart';
+// import 'package:easy_localization/easy_localization.dart';
+// import 'package:iotapp/services/language_service.dart';
+
+// class SettingPage extends StatefulWidget {
+//   @override
+//   _SettingPageState createState() => _SettingPageState();
+// }
+
+// class _SettingPageState extends State<SettingPage> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(tr('settings')),
+//       ),
+//       body: Column(
+//         children: [
+//           ListTile(
+//             title: Text(tr('language')),
+//             trailing: DropdownButton<Locale>(
+//               onChanged: (Locale? locale) {
+//                 if (locale != null) {
+//                   LanguageService.changeLanguage(context, locale);
+//                 }
+//               },
+//               items: [
+//                 DropdownMenuItem(
+//                   value: Locale('en', 'US'),
+//                   child: Text('English'),
+//                 ),
+//                 DropdownMenuItem(
+//                   value: Locale('vi', 'VN'),
+//                   child: Text('Tiếng Việt'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

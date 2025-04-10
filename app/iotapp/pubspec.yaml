@@ -40,6 +40,15 @@ dependencies:
   shared_preferences: ^2.5.2
   flutter_riverpod: ^2.6.1
   dart_jsonwebtoken: ^2.17.0
+  provider: ^6.1.4
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.19.0
+  easy_localization: ^3.0.7+1
+  flutter_countdown_timer: ^4.1.0
+  flutter_easyloading: ^3.0.5
+  fluttertoast: ^8.2.12
+  package_info_plus: ^8.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -56,11 +65,12 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/translations/en-US.json
+    - assets/translations/vi-VN.json  # Nếu có tiếng Việt
+
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

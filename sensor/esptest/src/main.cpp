@@ -55,37 +55,56 @@ void handleAlarm(int smokeValue, float temperature) ;
 // Khai báo biến Device ID
 void setup() {
     Serial.begin(115200);
+
     // Lấy địa chỉ MAC làm Device ID
     uint8_t mac[6];
     WiFi.macAddress(mac);
     char macStr[18];
     sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     deviceID = String(macStr);
-    // Khởi động WiFi & Blynk
-    WiFi.begin(ssid, pass);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println("\nWiFi connected!");
-    Blynk.config(BLYNK_AUTH_TOKEN);
-    Blynk.connect();
-    // Gửi Device ID (MAC) lên Blynk (V4)
-    Blynk.virtualWrite(V4, deviceID);
 
+    // Khai báo chân LED, Relay, Nút
     pinMode(LED_RED, OUTPUT);
     pinMode(LED_GREEN, OUTPUT);
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     pinMode(RELAY_PIN, OUTPUT);
     digitalWrite(RELAY_PIN, relayState);
 
+    // Kết nối WiFi
+    WiFi.begin(ssid, pass);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWiFi connected!");
+
+    // NHÁY ĐÈN 3 LẦN BÁO HIỆU
+    for (int i = 0; i < 3; i++) {
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_GREEN, HIGH);
+        delay(200);
+        digitalWrite(LED_RED, LOW);
+        digitalWrite(LED_GREEN, LOW);
+        delay(200);
+    }
+
+    // Kết nối Blynk
+    Blynk.config(BLYNK_AUTH_TOKEN);
+    Blynk.connect();
+
+    // Gửi Device ID lên Blynk
+    Blynk.virtualWrite(V4, deviceID);
+
+    // Khởi động cảm biến DHT
     dht.begin();
 
+    // Khởi động màn hình OLED
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
         Serial.println("SSD1306 allocation failed");
         while (1);
     }
-    // Hiển thị Device ID (MAC) trên OLED
+
+    // Hiển thị MAC trên OLED
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -98,6 +117,7 @@ void setup() {
     Serial.print("Device ID (MAC): ");
     Serial.println(deviceID);
 }
+
 void loop() {
     unsigned long currentMillis = millis();
     checkButton(currentMillis);
@@ -239,7 +259,7 @@ BLYNK_WRITE(V0) {
     relayState = param.asInt();  // Lấy giá trị từ Blynk
     digitalWrite(RELAY_PIN, relayState);
     systemOn = relayState;  // Đồng bộ trạng thái hệ thống với Blynk
-
+    digitalWrite(LED_GREEN, systemOn); 
    // Serial.printf("🌐 Blynk -> Relay State: %s\n", relayState ? "ON" : "OFF");
 }   
 // Đồng bộ Device ID khi kết nối lại Blynk

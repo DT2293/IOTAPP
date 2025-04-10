@@ -1,12 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:iotapp/pages/home_page.dart';
 import 'package:iotapp/services/auth_service.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String userId;     // Thêm userId để gọi API
+  final int userId;
   final String username;
   final String email;
-  final String token;      // Thêm token để xác thực
+  final String token;
 
   ProfilePage({
     required this.userId,
@@ -31,89 +32,78 @@ class _ProfilePageState extends State<ProfilePage> {
     _emailController.text = widget.email;
   }
 
-void _updateProfile() async {
-  String newUsername = _usernameController.text.trim();
-  String newEmail = _emailController.text.trim();
+  void _updateProfile() async {
+    String newUsername = _usernameController.text.trim();
+    String newEmail = _emailController.text.trim();
 
-  if (newUsername.isEmpty || newEmail.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Tên đăng nhập và email không được bỏ trống!")),
+    if (newUsername.isEmpty || newEmail.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("empty_username_email".tr())),
+      );
+      return;
+    }
+
+    int? userId = await _authService.getUserId();
+    String? token = await _authService.getToken();
+
+    if (userId == null || token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("no_userid_token".tr())),
+      );
+      return;
+    }
+
+    bool success = await _authService.updateUser(
+      newUsername,
+      newEmail,
+      widget.token,
     );
-    return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("update_success".tr())),
+      );
+
+      await Future.delayed(Duration(milliseconds: 500));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("update_failed".tr())),
+      );
+    }
   }
-
-  // 👉 Lấy userId và token từ SharedPreferences
-  String? userId = await _authService.getUserId();
-  String? token = await _authService.getToken();
-
-  print("📌 Debug userId: $userId");
-  print("📌 Debug token: $token");
-
-  if (userId == null || token == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("❌ Lỗi: Không tìm thấy userId hoặc token!")),
-    );
-    return;
-  }
-
-bool success = await _authService.updateUser(
-  newUsername, 
-  newEmail, 
-  widget.token
-);
-
-if (success) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text("Cập nhật thành công!")),
-  );
-
-  // ⏳ Đợi SnackBar hiển thị một chút trước khi chuyển trang
-  await Future.delayed(Duration(milliseconds: 500));
-
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => HomePage()),
-  );
-} else {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text("Lỗi khi cập nhật thông tin!")),
-  );
-}
-
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Thông tin tài khoản"),
+        title: Text("account_info".tr()),
         leading: IconButton(
-    icon: Icon(Icons.arrow_back),
-    onPressed: () {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()),);  // Quay về màn hình trước đó
-    },
-  ),
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Tên người dùng:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text("username".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(
-                hintText: "Nhập tên đăng nhập",
+                hintText: "enter_username".tr(),
                 border: OutlineInputBorder(),
               ),
             ),
             SizedBox(height: 16),
-            Text("Email:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text("email".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
-                hintText: "Nhập email",
+                hintText: "enter_email".tr(),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -121,7 +111,7 @@ if (success) {
             Center(
               child: ElevatedButton(
                 onPressed: _updateProfile,
-                child: Text("Cập nhật thông tin"),
+                child: Text("update_info".tr()),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                 ),

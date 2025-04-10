@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:iotapp/pages/forgotpassword_page.dart';
 import 'package:iotapp/pages/home_page.dart';
 import 'package:iotapp/pages/register_page.dart';
-import '../services/auth_service.dart';
+import 'package:iotapp/services/auth_service.dart';
+import 'package:iotapp/widget/language_dropdown.dart';
+// <-- Import widget đổi ngôn ngữ
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,7 +16,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  bool _isPasswordVisible = false; // ✅ Di chuyển biến này lên cấp State
+
+  bool _isPasswordVisible = false;
 
   void navigateToForgotPassword() {
     Navigator.push(
@@ -33,26 +37,53 @@ class _LoginPageState extends State<LoginPage> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    bool success = await _authService.login(email, password);
+    String? errorMessage = await _authService.login(email, password);
 
-    if (success) {
+    if (errorMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Đăng nhập thành công!")),
+        SnackBar(content: Text(tr('login_success'))),
       );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Đăng nhập thất bại!")),
-      );
+      final authService = AuthService();
+final error = await authService.login(email, password);
+
+if (error != null) {
+  final errorMessage = error.contains('tài khoản')
+      ? tr('invalid_username')
+      : error.contains('mật khẩu')
+          ? tr('invalid_password')
+          : tr('login_failed');
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        errorMessage,
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.red,
+    ),
+  );
+}
+
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(tr('login')),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: LanguageDropdown(), // <-- Widget đổi ngôn ngữ ở đây
+          ),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(16.0),
@@ -61,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Fire Alert App',
+                "IOT APP", // Có thể đổi thành tr('iot_app') nếu bạn muốn dịch cả tên app
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.blue[900],
@@ -73,10 +104,11 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'Email',
+                  labelText: tr('enter_email'),
+                  hintText: tr('enter_email'),
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -84,13 +116,16 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                 controller: _passwordController,
                 decoration: InputDecoration(
-                  labelText: 'Mật khẩu',
-                  hintText: 'Mật khẩu',
+                  labelText: tr('password'),
+                  hintText: tr('enter_password'),
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 10, vertical: 15),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                     ),
                     onPressed: () {
                       setState(() {
@@ -107,21 +142,20 @@ class _LoginPageState extends State<LoginPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
-                  shadowColor: Colors.blueAccent,
                   elevation: 5,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 ),
-                child: Text('Đăng nhập'),
+                child: Text(tr('login')),
               ),
               SizedBox(height: 10),
               Center(
                 child: InkWell(
                   onTap: navigateToForgotPassword,
                   child: Text(
-                    'Quên mật khẩu?',
+                    tr('forgot_password'),
                     style: TextStyle(fontSize: 16, color: Colors.blue[900]),
                   ),
                 ),
@@ -132,15 +166,19 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Nếu bạn chưa có tài khoản?',
+                      tr('no_account'),
                       style: TextStyle(fontSize: 16, color: Colors.blue[900]),
                     ),
                     SizedBox(width: 5),
                     InkWell(
                       onTap: navigateToRegister,
                       child: Text(
-                        'Đăng ký',
-                        style: TextStyle(fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.bold),
+                        tr('sign_up'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.blue[900],
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
