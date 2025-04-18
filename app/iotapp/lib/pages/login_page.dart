@@ -5,7 +5,6 @@ import 'package:iotapp/pages/home_page.dart';
 import 'package:iotapp/pages/register_page.dart';
 import 'package:iotapp/services/auth_service.dart';
 import 'package:iotapp/widget/language_dropdown.dart';
-// <-- Import widget đổi ngôn ngữ
 
 class LoginPage extends StatefulWidget {
   @override
@@ -37,38 +36,46 @@ class _LoginPageState extends State<LoginPage> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(tr('fill_all_fields')),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     String? errorMessage = await _authService.login(email, password);
 
     if (errorMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(tr('login_success'))),
       );
+
+      // Chờ SnackBar hiện 1 chút trước khi chuyển trang
+      await Future.delayed(Duration(milliseconds: 300));
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
-      final authService = AuthService();
-final error = await authService.login(email, password);
+      final translatedError = errorMessage.contains('tài khoản')
+          ? tr('invalid_username')
+          : errorMessage.contains('mật khẩu')
+              ? tr('invalid_password')
+              : tr('login_failed');
 
-if (error != null) {
-  final errorMessage = error.contains('tài khoản')
-      ? tr('invalid_username')
-      : error.contains('mật khẩu')
-          ? tr('invalid_password')
-          : tr('login_failed');
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        errorMessage,
-        style: TextStyle(color: Colors.white),
-      ),
-      backgroundColor: Colors.red,
-    ),
-  );
-}
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            translatedError,
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -80,7 +87,7 @@ if (error != null) {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: LanguageDropdown(), // <-- Widget đổi ngôn ngữ ở đây
+            child: LanguageDropdown(),
           ),
         ],
       ),
@@ -92,7 +99,7 @@ if (error != null) {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "IOT APP", // Có thể đổi thành tr('iot_app') nếu bạn muốn dịch cả tên app
+                "IOT APP",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.blue[900],

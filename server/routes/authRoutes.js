@@ -40,25 +40,82 @@ router.post("/register", async (req, res) => {
 });
 
 //  Đăng nhập
+// router.post("/login", async (req, res) => {
+//     try {
+//         let { username, email, password } = req.body;
+//         const query = email ? { email: email.toLowerCase().trim() } : { username: username.toLowerCase().trim() };
+//         const user = await User.findOne(query);
+
+//         if (!user) return res.status(401).json({ error: "Sai tài khoản đăng nhập" });
+
+//         const isMatch = await bcrypt.compare(password, user.password);
+//         if (!isMatch) return res.status(401).json({ error: "Sai mật khẩu!" });
+
+//         const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+//         res.json({ message: "Đăng nhập thành công!", token, user });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: "Lỗi khi đăng nhập" });
+//     }
+// });
+
+
+
+
 router.post("/login", async (req, res) => {
-    try {
-        let { username, email, password } = req.body;
-        const query = email ? { email: email.toLowerCase().trim() } : { username: username.toLowerCase().trim() };
-        const user = await User.findOne(query);
+  try {
+    let { username, email, password, fcmToken } = req.body;
 
-        if (!user) return res.status(401).json({ error: "Sai tài khoản đăng nhập" });
+    // Tạo điều kiện truy vấn theo email hoặc username
+    const query = email
+      ? { email: email.toLowerCase().trim() }
+      : { username: username.toLowerCase().trim() };
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(401).json({ error: "Sai mật khẩu!" });
-
-        const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-        res.json({ message: "Đăng nhập thành công!", token, user });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Lỗi khi đăng nhập" });
+    // Tìm user
+    const user = await User.findOne(query);
+    if (!user) {
+      return res.status(401).json({ error: "Sai tài khoản đăng nhập" });
     }
+
+    // Kiểm tra mật khẩu
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Sai mật khẩu!" });
+    }
+
+    // Tạo JWT token
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // ✅ Thêm FCM token nếu hợp lệ và chưa tồn tại trong mảng
+    if (fcmToken && typeof fcmToken === "string") {
+      if (!user.fcmToken.includes(fcmToken)) {
+        user.fcmToken.push(fcmToken);
+        await user.save();
+      }
+    }
+
+    // Trả kết quả
+    res.json({
+      message: "Đăng nhập thành công!",
+      token,
+      user: {
+        userId: user.userId,
+        username: user.username,
+        email: user.email,
+        devices: user.devices,
+        fcmToken: user.fcmToken, // là mảng
+      },
+    });
+  } catch (error) {
+    console.error("❌ Lỗi đăng nhập:", error.message);
+    res.status(500).json({ error: "Lỗi khi đăng nhập" });
+  }
 });
+
+module.exports = router;
 
 // Cập nhật thông tin user
 router.put("/update/:userId", authMiddleware, async (req, res) => {

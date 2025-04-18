@@ -26,6 +26,7 @@ const User = require("./models/user");
 // 🔹 Routes API
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/devices", require("./routes/deviceRoutes"));
+app.use("/api/fcm-token", require("./routes/fcmRoutes"));
 
 app.get("/", (req, res) => {
     res.send("🚀 Server IoT Báo Cháy đã sẵn sàng!");
@@ -40,7 +41,8 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const clients = new Map();
 const previousData = new Map();
-const BLYNK_TOKEN = "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6";
+const BLYNK_TOKEN = "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7";
+
 
 // 📡 Lấy dữ liệu từ Blynk
 const fetchData = async (deviceId) => {
@@ -162,29 +164,38 @@ wss.on("connection", async (ws) => {
     });
 });
 
+ const { handleAlert } = require("./fcm_services/handleAlert");
 
 // Gửi dữ liệu định kỳ mỗi 2 giây
 const sendData = async () => {
-    for (const [userId, userClients] of clients.entries()) {
-        // Sửa: Tìm theo userId (kiểu Number) thay vì _id
-        const userDevices = await User.findOne({ userId }).select("devices").lean();
-        if (!userDevices) continue;
-
-        for (const deviceId of userDevices.devices) {
-            const newData = await fetchData(deviceId);
-            if (!newData) continue;
-
-            // 🔹 Chỉ gửi nếu dữ liệu thay đổi
-            if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
-                previousData.set(deviceId, newData);
-                for (const client of userClients) {
-                    client.send(JSON.stringify({ type: "sensordatas", data: newData }));
-                }
+    const users = await User.find().select("userId devices");
+  
+    for (const user of users) {
+      for (const deviceId of user.devices) {
+        const newData = await fetchData(deviceId);
+        if (!newData) continue;
+  
+        if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
+  
+          // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
+          if (newData.temperature > 70) {
+            await handleAlert(deviceId, newData);
+          }
+  
+          previousData.set(deviceId, newData);
+  
+          // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
+          const userClients = clients.get(user.userId);
+          if (userClients) {
+            for (const client of userClients) {
+              client.send(JSON.stringify({ type: "sensordatas", data: newData }));
             }
+          }
         }
+      }
     }
-};
-
+  };
+  
 // Chạy sendData mỗi 2 giây
 setInterval(sendData, 2000);
 

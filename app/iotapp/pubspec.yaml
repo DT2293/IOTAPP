@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.1
+  sdk: ^3.7.2
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -34,21 +34,18 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  http: ^1.3.0
-  web_socket_channel: ^3.0.2
-  dio: ^5.8.0+1
-  shared_preferences: ^2.5.2
-  flutter_riverpod: ^2.6.1
-  dart_jsonwebtoken: ^2.17.0
+  firebase_core: ^3.13.0
   provider: ^6.1.4
-  flutter_localizations:
-    sdk: flutter
-  intl: ^0.19.0
   easy_localization: ^3.0.7+1
-  flutter_countdown_timer: ^4.1.0
-  flutter_easyloading: ^3.0.5
+  firebase_messaging: ^15.2.5
+  web_socket_channel: ^3.0.2
   fluttertoast: ^8.2.12
-  package_info_plus: ^8.3.0
+  flutter_countdown_timer: ^4.1.0
+  flutter_riverpod: ^2.6.1
+  dio: ^5.8.0+1
+  dart_jsonwebtoken: ^3.2.0
+  flutter_local_notifications: ^19.1.0
+  firebase_analytics: ^11.4.5
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -69,7 +66,6 @@ flutter:
   assets:
     - assets/translations/en-US.json
     - assets/translations/vi-VN.json  # Nếu có tiếng Việt
-
 
 
   # To add assets to your application, add an assets section, like this:

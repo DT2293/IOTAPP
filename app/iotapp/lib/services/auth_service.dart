@@ -1,40 +1,106 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:iotapp/services/fcm_initializer.dart';
+import 'package:iotapp/services/fcm_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
- // final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
- final Dio _dio =
-     Dio(BaseOptions(baseUrl: 'http://192.168.1.3:3000/api/auth'));
 
-  Future<String?> login(String usernameOrEmail, String password) async {
-    try {
-      Response response = await _dio.post('/login', data: {
+ //final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
+  final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
+  final FCMService fcmService = FCMService();
+
+Future<String?> login(String usernameOrEmail, String password) async {
+  final prefs = await SharedPreferences.getInstance();
+  final FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  try {
+    final response = await _dio.post(
+      '/login',
+      data: {
         "username": usernameOrEmail,
-        "email": usernameOrEmail,
+        "email": usernameOrEmail, // Có thể server chỉ dùng 1 trong 2
         "password": password,
-      });
+      },
+    ).timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 200) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String token = response.data['token'];
-        await prefs.setString('token', token);
-        await prefs.setString('user', jsonEncode(response.data['user']));
-        return null;
-      } else {
-        return response.data['error'] ?? tr('login_failed');
+    print("[LOGIN] ✅ Status code: ${response.statusCode}");
+
+    if (response.statusCode == 200) {
+      final token = response.data['token'];
+      final user = response.data['user'] as Map<String, dynamic>;
+      final int userId = user['userId'];
+
+      // Lưu thông tin user và token vào SharedPreferences
+      await prefs.setString('token', token);
+      await prefs.setString('user', jsonEncode(user));
+      await prefs.setInt('userId', userId);
+
+      // Lấy FCM token hiện tại và FCM token mới từ Firebase
+      final String? currentFcmToken = prefs.getString('fcmToken');
+      final String? newFcmToken = await messaging.getToken();
+
+      // Nếu FCM token thay đổi hoặc lần đầu -> cập nhật server
+      if (newFcmToken != null && newFcmToken != currentFcmToken) {
+        // Tạo instance FCMService và gọi addFcmToken
+        FCMService fcmService = FCMService();
+        await fcmService.addFcmToken(newFcmToken); // Thêm FCM token vào server
+        await prefs.setString('fcmToken', newFcmToken);
+        print("🔁 FCM token đã được cập nhật");
       }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        return e.response?.data['error'] ?? tr('server_error');
-      }
-      return tr('network_error');
-    } catch (e) {
-      return tr('unknown_error');
+
+      // Khởi tạo FCM listener
+      await FCMInitializer().init(); // Gọi init với userId
+
+      return null; // ✅ Thành công
     }
+
+    // Nếu login lỗi (401 hoặc khác)
+    return response.data['error'] ?? 'Đăng nhập thất bại';
+  } on DioException catch (e) {
+    return e.response?.data['error'] ?? 'Lỗi từ server';
+  } on TimeoutException {
+    return '⏰ Server không phản hồi, vui lòng thử lại';
+  } catch (err) {
+    print("[LOGIN] ❌ Lỗi không xác định: $err");
+    return 'Lỗi không xác định';
   }
+}
+
+Future<bool> isLoggedIn() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  return token != null && token.isNotEmpty;
+}
+Future<bool> autoLogin() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  final userId = prefs.getInt('userId');
+
+  if (token != null && userId != null) {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    final savedFcmToken = prefs.getString('fcmToken');
+
+    if (fcmToken != null && fcmToken != savedFcmToken) {
+      // Gọi FCMService để cập nhật FCM token lên server
+      FCMService fcmService = FCMService();
+      await fcmService.addFcmToken(fcmToken); // Cập nhật FCM token lên server
+      await prefs.setString('fcmToken', fcmToken); // Lưu FCM token vào SharedPreferences
+    }
+
+    // Khởi tạo FCM listener
+    await FCMInitializer().init();
+
+    return true;
+  }
+
+  return false; // Không có token hoặc userId trong SharedPreferences, trả về false
+}
+
 
   Future<String?> sendOtp(String email) async {
     try {

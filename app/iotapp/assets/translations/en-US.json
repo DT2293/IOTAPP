@@ -73,5 +73,6 @@
   "verify_otp"  : "Verify",
   "otp_time_left": "Time",
   "email_required" : "Email is required",
-  "wait" : "wait"
+  "wait" : "wait",
+  "fill_all_fields": "Please fill all fields"
 }

@@ -1,9 +1,16 @@
-#define BLYNK_TEMPLATE_ID "TMPL6SS1f0G7n"
-#define BLYNK_TEMPLATE_NAME "tcd"
-#define BLYNK_AUTH_TOKEN "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"
+// #define BLYNK_TEMPLATE_ID "TMPL6SS1f0G7n"
+// #define BLYNK_TEMPLATE_NAME "tcd"
+// #define BLYNK_AUTH_TOKEN "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"
+
 // #define BLYNK_TEMPLATE_ID "TMPL6e8QyMvX4"
 // #define BLYNK_TEMPLATE_NAME "dung2"
 // #define BLYNK_AUTH_TOKEN "y1uuRJfoya5d-4LuFATabTxi9gRegI0X"
+
+
+
+#define BLYNK_TEMPLATE_ID "TMPL66YWsXpxC"
+#define BLYNK_TEMPLATE_NAME "dung3"
+#define BLYNK_AUTH_TOKEN "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7"
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -480,3 +487,4 @@ BLYNK_CONNECTED() {
 //     display.println(msg);
 //     display.display();
 // }
+    

@@ -75,5 +75,6 @@
   "otp_time_left": "Còn lại",
   "otp_expired": "OTP đã hết hạn",
   "email_required" : "Email là bắt buộc",
-  "wait" : "Chờ"
+  "wait" : "Chờ",
+  "fill_all_fields": "Hãy điền đầy đủ các trường"
 }
