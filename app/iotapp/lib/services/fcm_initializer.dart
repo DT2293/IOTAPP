@@ -1,5 +1,9 @@
  import 'package:flutter_local_notifications/flutter_local_notifications.dart';
  import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:iotapp/main.dart';
+import 'package:iotapp/theme/message_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:iotapp/models/message_model.dart' as myModel;
 
 class FCMInitializer {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
@@ -42,6 +46,19 @@ class FCMInitializer {
       notification.body,
       platformDetails,
     );
+
+    final context = navigatorKey.currentContext;
+  if (context != null) {
+   Provider.of<MessageProvider>(context, listen: false).addMessage(
+  myModel.Message(
+    title: notification.title ?? 'Thông báo',
+    content: notification.body ?? '',
+    timestamp: DateTime.now(),
+    isRead: false,
+  ),
+);
+
+  }
   }
 }
 
@@ -70,4 +87,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     message.notification?.body ?? '',
     platformDetails,
   );
+
+
+  
 }

@@ -74,5 +74,10 @@
   "otp_time_left": "Time",
   "email_required" : "Email is required",
   "wait" : "wait",
-  "fill_all_fields": "Please fill all fields"
+  "fill_all_fields": "Please fill all fields",
+  "notification_title": "System Notifications",
+  "no_notifications": "No notifications available",
+  "message": "Message",
+  "message_detail": "Notification Detail",
+  "danger_alert":"Danger! Will be fire"
 }

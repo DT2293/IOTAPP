@@ -14,15 +14,26 @@ class FCMService {
       print("⚠️ Chưa đăng nhập, không thể thêm FCM token.");
       return;
     }
+    //final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api'));
 
     try {
       final response = await _dio.post(
-        'http://192.168.1.14:3000/api/fcm-token',
+        'http://dungtc.iothings.vn/api/fcm-token',
         data: {'fcmToken': fcmToken},
         options: Options(headers: {
           'Authorization': 'Bearer $token',
         }),
       );
+
+//  try {
+//       final response = await _dio.post(
+//         'http://192.168.0.102:3000/api/fcm-token',
+//         data: {'fcmToken': fcmToken},
+//         options: Options(headers: {
+//           'Authorization': 'Bearer $token',
+//         }),
+//       );
+
 
       if (response.statusCode == 200) {
         print("✅ FCM token đã thêm hoặc đã tồn tại.");
