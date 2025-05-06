@@ -11,7 +11,7 @@ console.log("JWT_SECRET:", process.env.JWT_SECRET);
 // Khởi tạo Express app
 const app = express();
 app.use(express.json());
-    app.use(cors());
+app.use(cors());
 
 // Kết nối MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -167,38 +167,6 @@ wss.on("connection", async (ws) => {
  const { handleAlert } = require("./fcm_services/handleAlert");
 
 // Gửi dữ liệu định kỳ mỗi 2 giây
-// const sendData = async () => {
-//     const users = await User.find().select("userId devices");
-  
-//     for (const user of users) {
-//       for (const deviceId of user.devices) {
-//         const newData = await fetchData(deviceId);
-//         if (!newData) continue;
-  
-//         if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
-  
-//           // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
-//           if (
-//             newData.temperature >= FIRE_THRESHOLDS.temperature_warning ||
-//             newData.smokeLevel >= FIRE_THRESHOLDS.smoke_warning
-//           ) {
-//             await handleAlert(deviceId, newData);
-//           }
-          
-//           previousData.set(deviceId, newData);
-  
-//           // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
-//           const userClients = clients.get(user.userId);
-//           if (userClients) {
-//             for (const client of userClients) {
-//               client.send(JSON.stringify({ type: "sensordatas", data: newData }));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   };
-// Cập nhật dữ liệu và gửi cảnh báo
 const sendData = async () => {
     const users = await User.find().select("userId devices");
   
@@ -207,42 +175,26 @@ const sendData = async () => {
         const newData = await fetchData(deviceId);
         if (!newData) continue;
   
-        const previousSensorData = previousData.get(deviceId) || {};
-        const currentTemperature = newData.temperature;
-        const previousTemperature = previousSensorData.temperature || currentTemperature;
+        if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
   
-        // Tính tốc độ tăng nhiệt (rate of rise)
-        let rateOfRise = 0;
-        if (previousTemperature && currentTemperature !== previousTemperature) {
-          const timeDifference = (Date.now() - (previousSensorData.timestamp || Date.now())) / 60000; // Tính thời gian thay đổi (phút)
-          if (timeDifference > 0) {
-            rateOfRise = (currentTemperature - previousTemperature) / timeDifference;
-          }
-        }
-  
-        // Kiểm tra thay đổi và gửi cảnh báo
-        if (JSON.stringify(newData) !== JSON.stringify(previousSensorData)) {
-          // Gửi cảnh báo cháy nếu cần
-          if (currentTemperature > FIRE_THRESHOLDS.temperature_critical || newData.smokeLevel > FIRE_THRESHOLDS.smoke_critical) {
-            await handleAlert(deviceId, { ...newData, rateOfRise });
+          // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
+          if (newData.temperature > 70) {
+            await handleAlert(deviceId, newData);
           }
   
-          // Cập nhật dữ liệu cho lần gửi tiếp theo
-          previousData.set(deviceId, { ...newData, timestamp: Date.now() });
-        }
+          previousData.set(deviceId, newData);
   
-        // Gửi dữ liệu real-time cho client WebSocket
-        const userClients = clients.get(user.userId);
-        if (userClients) {
-          for (const client of userClients) {
-            client.send(JSON.stringify({ type: "sensordatas", data: { ...newData, rateOfRise } }));
+          // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
+          const userClients = clients.get(user.userId);
+          if (userClients) {
+            for (const client of userClients) {
+              client.send(JSON.stringify({ type: "sensordatas", data: newData }));
+            }
           }
         }
       }
     }
   };
-
-  
   
 // Chạy sendData mỗi 2 giây
 setInterval(sendData, 2000);

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:iotapp/services/auth_interceptor.dart';
 import 'package:iotapp/services/fcm_initializer.dart';
 import 'package:iotapp/services/fcm_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,17 +10,10 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
 
-// final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
- // final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.0.102:3000/api/auth'));
- late final Dio _dio;
-   final FCMService fcmService = FCMService();
+ //final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
+  final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
+  final FCMService fcmService = FCMService();
 
-  AuthService() {
-    _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
-    _dio.interceptors.add(AuthInterceptor(_dio)); // ✅ Đúng vị trí
-  }
-
- 
 Future<String?> login(String usernameOrEmail, String password) async {
   final prefs = await SharedPreferences.getInstance();
   final FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -36,20 +28,15 @@ Future<String?> login(String usernameOrEmail, String password) async {
       },
     ).timeout(const Duration(seconds: 5));
 
-
     print("[LOGIN] ✅ Status code: ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      final accessToken = response.data['accessToken'];
-final refreshToken = response.data['refreshToken'];
-
-
-
+      final token = response.data['token'];
       final user = response.data['user'] as Map<String, dynamic>;
       final int userId = user['userId'];
 
-     await prefs.setString('accessToken', accessToken);
-await prefs.setString('refreshToken', refreshToken);
+      // Lưu thông tin user và token vào SharedPreferences
+      await prefs.setString('token', token);
       await prefs.setString('user', jsonEncode(user));
       await prefs.setInt('userId', userId);
 
@@ -86,29 +73,32 @@ await prefs.setString('refreshToken', refreshToken);
 
 Future<bool> isLoggedIn() async {
   final prefs = await SharedPreferences.getInstance();
-  final accessToken = prefs.getString('accessToken');
-  return accessToken != null && accessToken.isNotEmpty;
+  final token = prefs.getString('token');
+  return token != null && token.isNotEmpty;
 }
-
 Future<bool> autoLogin() async {
   final prefs = await SharedPreferences.getInstance();
-  final accessToken = prefs.getString('accessToken');
+  final token = prefs.getString('token');
   final userId = prefs.getInt('userId');
 
-  if (accessToken != null && userId != null) {
+  if (token != null && userId != null) {
     final fcmToken = await FirebaseMessaging.instance.getToken();
     final savedFcmToken = prefs.getString('fcmToken');
 
     if (fcmToken != null && fcmToken != savedFcmToken) {
-      await fcmService.addFcmToken(fcmToken);
-      await prefs.setString('fcmToken', fcmToken);
+      // Gọi FCMService để cập nhật FCM token lên server
+      FCMService fcmService = FCMService();
+      await fcmService.addFcmToken(fcmToken); // Cập nhật FCM token lên server
+      await prefs.setString('fcmToken', fcmToken); // Lưu FCM token vào SharedPreferences
     }
 
+    // Khởi tạo FCM listener
     await FCMInitializer().init();
+
     return true;
   }
 
-  return false;
+  return false; // Không có token hoặc userId trong SharedPreferences, trả về false
 }
 
 
@@ -333,18 +323,11 @@ Future<bool> autoLogin() async {
     return [];
   }
 
-  // Future<void> logout() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   await prefs.remove('token');
-  //   await prefs.remove('user');
-  // }
-
   Future<void> logout() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.clear();
-  print("🔒 Đã logout và xóa toàn bộ dữ liệu local.");
-}
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('user');
+  }
 }
 
 

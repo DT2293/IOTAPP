@@ -2,15 +2,15 @@
 // #define BLYNK_TEMPLATE_NAME "tcd"
 // #define BLYNK_AUTH_TOKEN "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"
 
-#define BLYNK_TEMPLATE_ID "TMPL6e8QyMvX4"
-#define BLYNK_TEMPLATE_NAME "dung2"
-#define BLYNK_AUTH_TOKEN "y1uuRJfoya5d-4LuFATabTxi9gRegI0X"
+// #define BLYNK_TEMPLATE_ID "TMPL6e8QyMvX4"
+// #define BLYNK_TEMPLATE_NAME "dung2"
+// #define BLYNK_AUTH_TOKEN "y1uuRJfoya5d-4LuFATabTxi9gRegI0X"
 
 
 
-// #define BLYNK_TEMPLATE_ID "TMPL66YWsXpxC"
-// #define BLYNK_TEMPLATE_NAME "dung3"
-// #define BLYNK_AUTH_TOKEN "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7"
+#define BLYNK_TEMPLATE_ID "TMPL66YWsXpxC"
+#define BLYNK_TEMPLATE_NAME "dung3"
+#define BLYNK_AUTH_TOKEN "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7"
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -65,7 +65,7 @@ const long BUTTON_DEBOUNCE = 300;
 
 void checkButton(unsigned long currentMillis);
 void readDHTSensor(unsigned long currentMillis);
-void readSmokeSensor(unsigned long currentMillis, float temperature, float humidity);
+void readSmokeSensor(unsigned long currentMillis, float temperature, float humidity, float rateOfRise);
 void handleAlarm(int smokeValue, float temperature,float rateOfRise) ;
 // Khai báo biến Device ID
 void setup() {
@@ -178,9 +178,13 @@ void readDHTSensor(unsigned long currentMillis) {
 
         if (!isnan(temperature) && !isnan(humidity)) {
             static float lastTemp = -100, lastHum = -100;
-            
+            static float lastTempForRate = -100;
+
             int tempRounded = round(temperature * 10) / 10;  // Giới hạn 1 số thập phân
             int humRounded = round(humidity);
+
+            float rateOfRise = (lastTempForRate == -100) ? 0 : (temperature - lastTempForRate);
+            lastTempForRate = temperature;
 
             if (abs(tempRounded - lastTemp) >= 1) {  
                 Blynk.virtualWrite(V2, tempRounded);
@@ -191,12 +195,13 @@ void readDHTSensor(unsigned long currentMillis) {
                 lastHum = humRounded;
             }
 
-            readSmokeSensor(currentMillis, tempRounded, humRounded);
+            readSmokeSensor(currentMillis, tempRounded, humRounded, rateOfRise);
         } else {
             Serial.println("⚠️ Lỗi đọc DHT22!");
         }
     }
 }
+
 void readSmokeSensor(unsigned long currentMillis, float temperature, float humidity, float rateOfRise)
 {
     if (currentMillis - lastSmokeRead >= SMOKE_INTERVAL) {
