@@ -76,5 +76,10 @@
   "otp_expired": "OTP đã hết hạn",
   "email_required" : "Email là bắt buộc",
   "wait" : "Chờ",
-  "fill_all_fields": "Hãy điền đầy đủ các trường"
+  "fill_all_fields": "Hãy điền đầy đủ các trường",
+  "notification_title": "Thông báo hệ thống",
+  "no_notifications": "Không có thông báo nào",
+  "message" : "Tin Nhắn",
+  "message_detail": "Chi tiết thông báo",
+  "danger_alert":"Nguy hiểm! Cảnh báo cháy có thể xảy ra"
 }
