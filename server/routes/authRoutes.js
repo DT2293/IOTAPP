@@ -43,8 +43,7 @@ router.post("/register", async (req, res) => {
 // router.post("/login", async (req, res) => {
 //     try {
 //         let { username, email, password } = req.body;
-//         const query = email ? { email: email.toLowerCase().trim() } : { username: username.toLowerCase().trim() };
-//         const user = await User.findOne(query);
+//         const query = email ? { emai/        const user = await User.findOne(query);
 
 //         if (!user) return res.status(401).json({ error: "Sai tài khoản đăng nhập" });
 
@@ -59,10 +58,6 @@ router.post("/register", async (req, res) => {
 //         res.status(500).json({ error: "Lỗi khi đăng nhập" });
 //     }
 // });
-
-
-
-
 router.post("/login", async (req, res) => {
   try {
     let { username, email, password, fcmToken } = req.body;
@@ -114,9 +109,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Lỗi khi đăng nhập" });
   }
 });
-
-module.exports = router;
-
 // Cập nhật thông tin user
 router.put("/update/:userId", authMiddleware, async (req, res) => {
     try {

@@ -41,7 +41,7 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const clients = new Map();
 const previousData = new Map();
-const BLYNK_TOKEN = "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7";
+const BLYNK_TOKEN = "y1uuRJfoya5d-4LuFATabTxi9gRegI0X";
 
 
 // 📡 Lấy dữ liệu từ Blynk
