@@ -205,13 +205,14 @@ Future<bool> autoLogin() async {
   }
 
   Future<String?> register(
-      String username, String email, String password) async {
+      String username, String email,String phonenumber ,String password) async {
     try {
       final response = await _dio.post(
         '/register',
         data: {
           "username": username,
           "email": email,
+          "phonenumber": phonenumber,
           "password": password,
         },
         options: Options(headers: {"Content-Type": "application/json"}),
@@ -236,7 +237,7 @@ Future<bool> autoLogin() async {
     }
   }
 
-  Future<bool> updateUser(String username, String email, String token) async {
+  Future<bool> updateUser(String username, String email,String phonenumber ,String token) async {
     int? userId = await getUserId(); // 🔍 Lấy userId từ SharedPreferences
 
     if (userId == null) {
@@ -252,6 +253,7 @@ Future<bool> autoLogin() async {
         '/update/$userId',
         data: {
           "username": username,
+          "phonenumber":phonenumber,
           "email": email,
         },
         options: Options(

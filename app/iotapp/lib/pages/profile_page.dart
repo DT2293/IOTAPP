@@ -24,6 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final AuthService _authService = AuthService();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void initState() {
@@ -35,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void _updateProfile() async {
     String newUsername = _usernameController.text.trim();
     String newEmail = _emailController.text.trim();
-
+    String newPhone = _phoneController.text.trim();
     if (newUsername.isEmpty || newEmail.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("empty_username_email".tr())),
@@ -56,6 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
     bool success = await _authService.updateUser(
       newUsername,
       newEmail,
+      newPhone,
       widget.token,
     );
 
@@ -104,6 +106,15 @@ class _ProfilePageState extends State<ProfilePage> {
               controller: _emailController,
               decoration: InputDecoration(
                 hintText: "enter_email".tr(),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 24),
+             Text("phone".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                hintText: "enter_phone".tr(),
                 border: OutlineInputBorder(),
               ),
             ),

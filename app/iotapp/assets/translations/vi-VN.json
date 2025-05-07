@@ -81,5 +81,8 @@
   "no_notifications": "Không có thông báo nào",
   "message" : "Tin Nhắn",
   "message_detail": "Chi tiết thông báo",
-  "danger_alert":"Nguy hiểm! Cảnh báo cháy có thể xảy ra"
+  "danger_alert":"Nguy hiểm! Cảnh báo cháy có thể xảy ra",
+  "enter_phone": "Nhập số điện thoại",
+  "phone_required": "Số điện thoại là bắt buộc",
+  "phone":"Số điện thoại"
 }

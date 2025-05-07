@@ -4,7 +4,6 @@ import 'package:iotapp/pages/login_page.dart';
 import 'package:iotapp/services/auth_service.dart';
 import 'package:iotapp/widget/language_dropdown.dart';
 
-
 class RegisterPage extends StatefulWidget {
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -14,8 +13,10 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _repeatPasswordController = TextEditingController();
+  final TextEditingController _repeatPasswordController =
+      TextEditingController();
   final AuthService _authService = AuthService();
 
   bool _isLoading = false;
@@ -33,9 +34,9 @@ class _RegisterPageState extends State<RegisterPage> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _repeatPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('password_mismatch'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('password_mismatch'))));
       return;
     }
 
@@ -44,20 +45,21 @@ class _RegisterPageState extends State<RegisterPage> {
     String? errorMessage = await _authService.register(
       _usernameController.text,
       _emailController.text,
+      _phoneController.text,
       _passwordController.text,
     );
 
     setState(() => _isLoading = false);
 
     if (errorMessage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('register_success'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('register_success'))));
       navigateToLoginPage();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     }
   }
 
@@ -66,7 +68,12 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(tr('sign_up')),
-        actions: [Padding(padding: EdgeInsets.only(right: 8), child: LanguageDropdown())],
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: LanguageDropdown(),
+          ),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -91,12 +98,18 @@ class _RegisterPageState extends State<RegisterPage> {
                     labelText: tr('enter_email'),
                     hintText: tr('enter_email'),
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
+                    ),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return tr('email_required');
-                    if (!RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(value)) {
+                    if (value == null || value.isEmpty)
+                      return tr('email_required');
+                    if (!RegExp(
+                      r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
+                    ).hasMatch(value)) {
                       return tr('invalid_email');
                     }
                     return null;
@@ -104,15 +117,46 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: tr('enter_phone'),
+                    hintText: tr('enter_phone'),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return tr('phone_required');
+                    }
+                    // Regex kiểm tra số điện thoại từ 9 đến 11 chữ số (có thể chỉnh)
+                    if (!RegExp(r'^\d{9,11}$').hasMatch(value)) {
+                      return tr(
+                        'invalid_phone',
+                      ); // <-- Đổi key này cho đúng nghĩa
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 20),
+                TextFormField(
                   controller: _usernameController,
                   decoration: InputDecoration(
                     labelText: tr('username'),
                     hintText: tr('enter_username'),
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
+                    ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return tr('username_required');
+                    if (value == null || value.isEmpty)
+                      return tr('username_required');
                     return null;
                   },
                 ),
@@ -123,9 +167,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     labelText: tr('password'),
                     hintText: tr('enter_password'),
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
+                    ),
                     suffixIcon: IconButton(
-                      icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isPasswordVisible = !_isPasswordVisible;
@@ -135,7 +186,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   obscureText: !_isPasswordVisible,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return tr('password_required');
+                    if (value == null || value.isEmpty)
+                      return tr('password_required');
                     if (value.length < 6) return tr('password_length');
                     return null;
                   },
@@ -147,9 +199,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     labelText: tr('confirm_password'),
                     hintText: tr('confirm_password'),
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
+                    ),
                     suffixIcon: IconButton(
-                      icon: Icon(_isRepeatPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                      icon: Icon(
+                        _isRepeatPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isRepeatPasswordVisible = !_isRepeatPasswordVisible;
@@ -159,8 +218,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   obscureText: !_isRepeatPasswordVisible,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return tr('confirm_password_required');
-                    if (value != _passwordController.text) return tr('password_mismatch');
+                    if (value == null || value.isEmpty)
+                      return tr('confirm_password_required');
+                    if (value != _passwordController.text)
+                      return tr('password_mismatch');
                     return null;
                   },
                 ),
@@ -177,23 +238,24 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                   ),
-                  child: _isLoading
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                  child:
+                      _isLoading
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 10),
-                            Text(tr('registering')),
-                          ],
-                        )
-                      : Text(tr('sign_up')),
+                              SizedBox(width: 10),
+                              Text(tr('registering')),
+                            ],
+                          )
+                          : Text(tr('sign_up')),
                 ),
                 SizedBox(height: 10),
                 Center(
@@ -210,7 +272,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: Text(
                           tr('login'),
                           style: TextStyle(
-                              fontSize: 16, color: Colors.blue[900], fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            color: Colors.blue[900],
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],

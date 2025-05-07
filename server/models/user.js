@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
     userId: { type: Number, unique: true },
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    phonenumber: [{type: String, require: true}],
     password: { type: String, required: true },
     devices: [{ type: String, ref: "devices" }], // deviceId từ Blynk
     fcmToken: [{ type: String }], // ✅ mảng các FCM token
