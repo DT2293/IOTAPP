@@ -7,15 +7,13 @@ import 'package:iotapp/services/language_service.dart';
 import 'package:iotapp/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-
 class SettingPage extends StatefulWidget {
-
   @override
   _SettingPageState createState() => _SettingPageState();
 }
 
 class _SettingPageState extends State<SettingPage> {
-    final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService();
   bool isDarkMode = false;
   String appVersion = '';
 
@@ -35,8 +33,14 @@ class _SettingPageState extends State<SettingPage> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700])),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey[700],
+        ),
+      ),
     );
   }
 
@@ -45,20 +49,22 @@ class _SettingPageState extends State<SettingPage> {
     Locale currentLocale = context.locale;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(tr('settings')),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(tr('settings')), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [
           _buildSectionTitle(tr('general')),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.language, color: Theme.of(context).colorScheme.primary),
+                  leading: Icon(
+                    Icons.language,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   title: Text(tr('language')),
                   trailing: DropdownButtonHideUnderline(
                     child: DropdownButton<Locale>(
@@ -81,33 +87,39 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                   ),
                 ),
-               SwitchListTile(
-  secondary: Icon(Icons.brightness_6_outlined,
-      color: Theme.of(context).colorScheme.primary),
-  title: Text(tr('dark_mode')),
-  value: context.watch<ThemeProvider>().isDarkMode,
-  onChanged: (bool value) {
-    context.read<ThemeProvider>().toggleTheme(value);
-  },
-),
-
+                SwitchListTile(
+                  secondary: Icon(
+                    Icons.brightness_6_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(tr('dark_mode')),
+                  value: context.watch<ThemeProvider>().isDarkMode,
+                  onChanged: (bool value) {
+                    context.read<ThemeProvider>().toggleTheme(value);
+                  },
+                ),
               ],
             ),
           ),
 
           _buildSectionTitle(tr('account')),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Column(
               children: [
                 ListTile(
                   leading: Icon(Icons.lock_outline, color: Colors.orange),
                   title: Text(tr('change_password')),
                   trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UpdatePasswordPage()),
-                ),
+                  onTap:
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UpdatePasswordPage(),
+                        ),
+                      ),
                 ),
                 ListTile(
                   leading: Icon(Icons.logout, color: Colors.redAccent),
@@ -121,7 +133,9 @@ class _SettingPageState extends State<SettingPage> {
 
           _buildSectionTitle(tr('about')),
           Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: ListTile(
               leading: Icon(Icons.info_outline, color: Colors.blue),
               title: Text(tr('app_version')),
@@ -133,4 +147,3 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 }
-

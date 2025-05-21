@@ -82,5 +82,6 @@
   "danger_alert":"Danger! Will be fire",
   "enter_phone": "Enter your phone number",
   "phone_required": "Phone number is required",
-  "phone":"Phone number"
+  "phone":"Phone number",
+  "register_success":"Register Successful"
 }

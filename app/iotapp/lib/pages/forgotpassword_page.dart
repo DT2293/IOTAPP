@@ -141,9 +141,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   ),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) => value == null || value.isEmpty
-                    ? tr("email_required")
-                    : null,
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? tr("email_required")
+                            : null,
               ),
               const SizedBox(height: 24),
               if (otpSent) ...[
@@ -179,25 +181,28 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           } else {
                             return Text(
                               "${tr("otp_time_left")}: ${time.min ?? 0}:${(time.sec ?? 0).toString().padLeft(2, '0')}",
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             );
                           }
                         },
                       ),
                     TextButton.icon(
-                      onPressed: (endTime != null &&
-                              DateTime.now().millisecondsSinceEpoch < endTime!)
-                          ? null
-                          : () {
-                              _sendOtp();
-                            },
+                      onPressed:
+                          (endTime != null &&
+                                  DateTime.now().millisecondsSinceEpoch <
+                                      endTime!)
+                              ? null
+                              : () {
+                                _sendOtp();
+                              },
                       label: Text(
                         (endTime != null &&
                                 DateTime.now().millisecondsSinceEpoch <
                                     endTime!)
-                            ? tr("wait") 
-                            : tr("resend_otp"), 
+                            ? tr("wait")
+                            : tr("resend_otp"),
                       ),
                     ),
                   ],

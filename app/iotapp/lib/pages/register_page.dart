@@ -188,7 +188,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty)
                       return tr('password_required');
-                    if (value.length < 6) return tr('password_length');
+                    if (value.length < 6) return tr('password_min_length');
                     return null;
                   },
                 ),

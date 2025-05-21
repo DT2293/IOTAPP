@@ -49,9 +49,9 @@ class _LoginPageState extends State<LoginPage> {
     String? errorMessage = await _authService.login(email, password);
 
     if (errorMessage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('login_success'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('login_success'))));
 
       // Chờ SnackBar hiện 1 chút trước khi chuyển trang
       await Future.delayed(Duration(milliseconds: 300));
@@ -61,18 +61,16 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
-      final translatedError = errorMessage.contains('tài khoản')
-          ? tr('invalid_username')
-          : errorMessage.contains('mật khẩu')
+      final translatedError =
+          errorMessage.contains('tài khoản')
+              ? tr('invalid_username')
+              : errorMessage.contains('mật khẩu')
               ? tr('invalid_password')
               : tr('login_failed');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            translatedError,
-            style: TextStyle(color: Colors.white),
-          ),
+          content: Text(translatedError, style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.red,
         ),
       );
@@ -114,8 +112,10 @@ class _LoginPageState extends State<LoginPage> {
                   labelText: tr('enter_email'),
                   hintText: tr('enter_email'),
                   border: OutlineInputBorder(),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 15,
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -126,8 +126,10 @@ class _LoginPageState extends State<LoginPage> {
                   labelText: tr('password'),
                   hintText: tr('enter_password'),
                   border: OutlineInputBorder(),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 15,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible

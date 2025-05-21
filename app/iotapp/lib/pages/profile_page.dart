@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:iotapp/pages/home_page.dart';
 import 'package:iotapp/services/auth_service.dart';
 
 class ProfilePage extends StatefulWidget {
   final int userId;
   final String username;
+  final List<String> phone;
   final String email;
   final String token;
 
@@ -13,6 +15,7 @@ class ProfilePage extends StatefulWidget {
     required this.userId,
     required this.username,
     required this.email,
+    required this.phone,
     required this.token,
   });
 
@@ -25,22 +28,44 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  List<String> phoneNumbers = [];
 
   @override
   void initState() {
     super.initState();
     _usernameController.text = widget.username;
     _emailController.text = widget.email;
+    phoneNumbers = List.from(widget.phone);
   }
+
+void _addPhoneNumber() async {
+  String phone = _phoneController.text.trim();
+  if (phone.isEmpty) {
+    Fluttertoast.showToast(msg: tr("phone_required"));
+    return;
+  }
+
+  bool success = await _authService.addPhoneNumber(phone, widget.token);
+  if (success) {
+    setState(() {
+      phoneNumbers.add(phone);
+      _phoneController.clear();
+    });
+    Fluttertoast.showToast(msg: tr("add_phone_success"));
+  } else {
+    Fluttertoast.showToast(msg: tr("add_phone_failed"));
+  }
+}
+
 
   void _updateProfile() async {
     String newUsername = _usernameController.text.trim();
     String newEmail = _emailController.text.trim();
     String newPhone = _phoneController.text.trim();
     if (newUsername.isEmpty || newEmail.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("empty_username_email".tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("empty_username_email".tr())));
       return;
     }
 
@@ -48,9 +73,9 @@ class _ProfilePageState extends State<ProfilePage> {
     String? token = await _authService.getToken();
 
     if (userId == null || token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("no_userid_token".tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("no_userid_token".tr())));
       return;
     }
 
@@ -62,16 +87,19 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("update_success".tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("update_success".tr())));
 
       await Future.delayed(Duration(milliseconds: 500));
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("update_failed".tr())),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("update_failed".tr())));
     }
   }
 
@@ -83,7 +111,10 @@ class _ProfilePageState extends State<ProfilePage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
           },
         ),
       ),
@@ -92,7 +123,10 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("username".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              "username".tr(),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(
@@ -101,7 +135,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             SizedBox(height: 16),
-            Text("email".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              "email".tr(),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -110,14 +147,38 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             SizedBox(height: 24),
-             Text("phone".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+
+            // Modified phone input
             TextField(
               controller: _phoneController,
               decoration: InputDecoration(
-                hintText: "enter_phone".tr(),
+                labelText: tr('enter_phone'),
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    final newPhone = _phoneController.text.trim();
+                    if (newPhone.isNotEmpty) {
+                      _addPhoneNumber();
+                    }
+                  },
+                ),
               ),
+              keyboardType: TextInputType.phone,
             ),
+            SizedBox(height: 24),
+
+            // List of phone numbers
+            if (phoneNumbers.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: phoneNumbers.map((phone) {
+                  return ListTile(
+                    title: Text(phone),
+                  );
+                }).toList(),
+              ),
+
             SizedBox(height: 24),
             Center(
               child: ElevatedButton(
