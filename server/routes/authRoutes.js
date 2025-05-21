@@ -93,7 +93,7 @@ router.post("/login", async (req, res) => {
     }
 });
 // Cập nhật thông tin user
-// router.put("/update/:userId", authMiddleware, async (req, res) => {
+//router.put("/update/:userId", authMiddleware, async (req, res) => {
 //     try {
 //         const { username, email } = req.body;
 //         const userId = Number(req.params.userId); // 🔹 Chuyển userId về kiểu số
@@ -352,5 +352,45 @@ router.post("/logout", (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
     res.json({ message: "Đăng xuất thành công!" });
 });
+
+
+router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
+  try {
+    // Lấy userId từ tham số URL
+    const { userId } = req.params;
+
+    // Lấy số điện thoại từ body request
+    const { newPhone } = req.body;
+
+    // Kiểm tra xem số điện thoại có hợp lệ không
+    if (!newPhone || newPhone.trim() === "") {
+      return res.status(400).send({ message: "Phone number is required" });
+    }
+
+    // Tìm người dùng trong cơ sở dữ liệu
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Thêm số điện thoại vào mảng phonenumber
+    user.phonenumber.push(newPhone);
+
+    // Lưu lại thay đổi trong cơ sở dữ liệu
+    await user.save();
+
+    // Trả về kết quả sau khi thêm thành công
+    res.send({
+      message: "Phone number added",
+      phonenumber: user.phonenumber,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Error updating phone number" });
+  }
+});
+
+
 
 module.exports = router;
