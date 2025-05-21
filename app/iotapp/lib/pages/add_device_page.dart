@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iotapp/models/device_model.dart';
+
+import 'package:iotapp/services/device_service.dart';
 
 class AddDevicePage extends StatefulWidget {
-
   const AddDevicePage({super.key});
 
   @override
@@ -9,43 +11,94 @@ class AddDevicePage extends StatefulWidget {
 }
 
 class _AddDevicePageState extends State<AddDevicePage> {
-  late TextEditingController _deviceIdController;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _deviceIdController = TextEditingController();
+  final TextEditingController _deviceNameController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _deviceIdController = TextEditingController(text: "sss");
-  }
+  final DeviceService _deviceService = DeviceService();
 
-  @override
-  void dispose() {
-    _deviceIdController.dispose();
-    super.dispose();
+  bool _active = true;
+  bool _isLoading = false;
+
+  Future<void> _addDevice() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final newDevice = Device(
+      deviceId: _deviceIdController.text.trim(),
+      deviceName: _deviceNameController.text.trim(),
+      location: _locationController.text.trim(),
+      active: _active,
+    );
+
+    try {
+      await _deviceService.addDevice(newDevice);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Thiết bị được thêm thành công!')),
+      );
+
+      Navigator.pop(context, true); // quay về và báo thành công
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Thêm thiết bị")),
+      return Scaffold(
+      appBar: AppBar(title: const Text('Thêm Thiết Bị')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _deviceIdController,
-              decoration: const InputDecoration(
-                labelText: "Device ID",
-                border: OutlineInputBorder(),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _deviceIdController,
+                decoration: const InputDecoration(labelText: 'Device ID'),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Vui lòng nhập device ID' : null,
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: gửi request thêm thiết bị nếu cần
-              },
-              child: const Text("Lưu thiết bị"),
-            )
-          ],
+              TextFormField(
+                controller: _deviceNameController,
+                decoration: const InputDecoration(labelText: 'Tên thiết bị'),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Vui lòng nhập tên' : null,
+              ),
+              TextFormField(
+                controller: _locationController,
+                decoration: const InputDecoration(labelText: 'Vị trí'),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Vui lòng nhập vị trí' : null,
+              ),
+              SwitchListTile(
+                value: _active,
+                onChanged: (val) => setState(() => _active = val),
+                title: const Text('Kích hoạt'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: _isLoading ? null : _addDevice,
+                icon: const Icon(Icons.add),
+                label: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Thêm Thiết Bị'),
+              ),
+            ],
+          ),
         ),
       ),
     );

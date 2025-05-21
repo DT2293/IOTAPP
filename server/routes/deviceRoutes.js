@@ -60,14 +60,14 @@ router.post("/", authMiddleware, async (req, res) => {
 });
 
 // Lấy thông tin thiết bị theo deviceId
+// Lấy thông tin thiết bị theo deviceId
 router.get("/:deviceId", authMiddleware, async (req, res) => {
     try {
-        const deviceId = Number(req.params.deviceId);
+        const deviceId = req.params.deviceId;  // giữ nguyên string
         const device = await Device.findOne({ deviceId });
 
         if (!device) return res.status(404).json({ error: "Không tìm thấy thiết bị" });
 
-        // Tìm user theo userId (vì userId trong Device là Number)
         const user = await User.findOne({ userId: device.userId }).select("username email");
 
         res.json({ ...device.toObject(), user });
@@ -77,10 +77,10 @@ router.get("/:deviceId", authMiddleware, async (req, res) => {
     }
 });
 
-//  Cập nhật thiết bị theo deviceId
+// Cập nhật thiết bị theo deviceId
 router.put("/:deviceId", authMiddleware, async (req, res) => {
     try {
-        const deviceId = Number(req.params.deviceId); // Ép kiểu
+        const deviceId = req.params.deviceId;  // giữ nguyên string
         const { deviceName, location, active } = req.body;
 
         const existingDevice = await Device.findOne({ deviceId });
@@ -98,12 +98,11 @@ router.put("/:deviceId", authMiddleware, async (req, res) => {
     }
 });
 
-
 // Xóa thiết bị theo deviceId
 router.delete("/:deviceId", authMiddleware, async (req, res) => {
     try {
         const userId = req.user.userId;
-        const deviceId = Number(req.params.deviceId); // Ép kiểu
+        const deviceId = req.params.deviceId;  // giữ nguyên string
 
         const deletedDevice = await Device.findOneAndDelete({ deviceId, userId });
         if (!deletedDevice) return res.status(404).json({ error: "Không tìm thấy thiết bị của user này" });
@@ -113,18 +112,6 @@ router.delete("/:deviceId", authMiddleware, async (req, res) => {
     } catch (error) {
         console.error("Lỗi khi xóa thiết bị:", error);
         res.status(500).json({ error: "Lỗi khi xóa thiết bị" });
-    }
-});
-
-// Lấy danh sách tất cả thiết bị của người dùng
-router.get("/", authMiddleware, async (req, res) => {
-    try {
-        const userId = req.user.userId;
-        const devices = await Device.find({ userId });
-        res.json({ devices });
-    } catch (error) {
-        console.error("Lỗi khi lấy danh sách thiết bị:", error);
-        res.status(500).json({ error: "Lỗi khi lấy danh sách thiết bị" });
     }
 });
 
