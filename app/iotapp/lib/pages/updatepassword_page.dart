@@ -30,8 +30,9 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
     final token = prefs.getString('token');
 
     if (userJson == null || token == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('not_logged_in'.tr())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('not_logged_in'.tr())));
       setState(() => _isLoading = false);
       return;
     }
@@ -50,17 +51,23 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
     setState(() => _isLoading = false);
 
     if (error == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('update_success'.tr())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('update_success'.tr())));
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
   InputDecoration _inputDecoration(
-      String label, IconData icon, bool obscure, VoidCallback onToggle) {
+    String label,
+    IconData icon,
+    bool obscure,
+    VoidCallback onToggle,
+  ) {
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon),
@@ -76,10 +83,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
   Widget build(BuildContext context) {
     final spacing = const SizedBox(height: 16);
     return Scaffold(
-      appBar: AppBar(
-        title: Text("update_password".tr()),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text("update_password".tr()), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Form(
@@ -90,21 +94,31 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                 controller: _oldPasswordController,
                 obscureText: _obscureOld,
                 decoration: _inputDecoration(
-                    'old_password'.tr(), Icons.lock, _obscureOld, () {
-                  setState(() => _obscureOld = !_obscureOld);
-                }),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'enter_old_password'.tr()
-                    : null,
+                  'old_password'.tr(),
+                  Icons.lock,
+                  _obscureOld,
+                  () {
+                    setState(() => _obscureOld = !_obscureOld);
+                  },
+                ),
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? 'enter_old_password'.tr()
+                            : null,
               ),
               spacing,
               TextFormField(
                 controller: _newPasswordController,
                 obscureText: _obscureNew,
                 decoration: _inputDecoration(
-                    'new_password'.tr(), Icons.lock_outline, _obscureNew, () {
-                  setState(() => _obscureNew = !_obscureNew);
-                }),
+                  'new_password'.tr(),
+                  Icons.lock_outline,
+                  _obscureNew,
+                  () {
+                    setState(() => _obscureNew = !_obscureNew);
+                  },
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty)
                     return 'enter_new_password'.tr();
@@ -116,10 +130,14 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: _obscureConfirm,
-                decoration: _inputDecoration('confirm_password'.tr(),
-                    Icons.verified_user, _obscureConfirm, () {
-                  setState(() => _obscureConfirm = !_obscureConfirm);
-                }),
+                decoration: _inputDecoration(
+                  'confirm_password'.tr(),
+                  Icons.verified_user,
+                  _obscureConfirm,
+                  () {
+                    setState(() => _obscureConfirm = !_obscureConfirm);
+                  },
+                ),
                 validator: (value) {
                   if (value != _newPasswordController.text)
                     return 'passwords_do_not_match'.tr();
@@ -130,25 +148,26 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
               _isLoading
                   ? CircularProgressIndicator()
                   : SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: _handleUpdatePassword,
-                        label: Text(
-                          'update'.tr(),
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: _handleUpdatePassword,
+                      label: Text(
+                        'update'.tr(),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
+                  ),
             ],
           ),
         ),

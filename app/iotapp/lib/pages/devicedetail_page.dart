@@ -2,10 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:iotapp/services/websocket_service.dart';
 import 'package:provider/provider.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'dart:convert';
-import 'dart:async';
-import 'package:shared_preferences/shared_preferences.dart';
+
 
 // class DeviceDetailPage extends StatefulWidget {
 //   final String deviceId;

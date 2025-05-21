@@ -260,6 +260,20 @@ router.get("/profile", authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng" });
     }
 });
+router.patch("/add-phone", authMiddleware, async (req, res) => {
+    const { userId, newPhone } = req.body;
+    try {
+      const user = await User.findOne({ userId });
+      if (!user) return res.status(404).send("User not found");
+  
+      user.phonenumber.push(newPhone);
+      await user.save();
+      res.send({ message: "Phone number added", phonenumber: user.phonenumber });
+    } catch (err) {
+      res.status(500).send("Error updating phone number");
+    }
+  });
+  
 
 
 

@@ -49,7 +49,7 @@
   "update_password": "Đổi mật khẩu",
   "old_password": "Mật khẩu cũ",
   "new_password": "Mật khẩu mới",
-  "confirm_password": "Xác nhận mật khẩu mới",
+  "confirm_password": "Xác nhận mật khẩu",
   "enter_old_password": "Vui lòng nhập mật khẩu cũ",
   "enter_new_password": "Vui lòng nhập mật khẩu mới",
   "password_too_short": "Mật khẩu mới phải có ít nhất 6 ký tự",
@@ -84,5 +84,6 @@
   "danger_alert":"Nguy hiểm! Cảnh báo cháy có thể xảy ra",
   "enter_phone": "Nhập số điện thoại",
   "phone_required": "Số điện thoại là bắt buộc",
-  "phone":"Số điện thoại"
+  "phone":"Số điện thoại",
+  "register_success":"Đăng ký thành công"
 }

@@ -25,22 +25,24 @@ class _SplashPageState extends State<SplashPage> {
     if (token != null && userId != null) {
       // Đã đăng nhập -> vào Home
       Future.delayed(const Duration(milliseconds: 500), () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HomePage()),
+        );
       });
     } else {
       // Chưa đăng nhập
       Future.delayed(const Duration(milliseconds: 500), () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginPage()),
+        );
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

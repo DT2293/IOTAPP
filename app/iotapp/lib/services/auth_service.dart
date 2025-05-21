@@ -10,8 +10,8 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
 
- //final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
-  final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
+ final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
+ // final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
   final FCMService fcmService = FCMService();
 
 Future<String?> login(String usernameOrEmail, String password) async {
@@ -237,6 +237,71 @@ Future<bool> autoLogin() async {
     }
   }
 
+  // Future<bool> addPhoneUser(String phonenumber,String token) async {
+  //   // int? userId = await getUserId(); // 🔍 Lấy userId từ SharedPreferences
+
+  //   // if (userId == null) {
+  //   //   print("🚨 Không tìm thấy userId!");
+  //   //   return false;
+  //   // }
+
+  //   try {
+  //     // print("🔑 Token: $token");
+  //     // print("📌 userId: ${userId.toString()}");
+
+  //     final response = await _dio.patch(
+  //       '/addphone',
+  //       data: {
+  //       //  "username": username,
+  //         "phonenumber":phonenumber,
+  //       //  "email": email,
+  //       },
+  //       options: Options(
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Authorization": "Bearer $token",
+  //         },
+  //       ),
+  //     );
+
+  //     print("Response Status: ${response.statusCode}");
+  //     print("Response Data: ${response.data}");
+
+  //     return response.statusCode == 200;
+  //   } on DioException catch (e) {
+  //     print("🚨 Lỗi : ${e.response?.data ?? e.message}");
+  //     return false;
+  //   }
+  // }
+
+Future<bool> addPhoneNumber(String phoneNumber,String token) async {
+    try {
+
+      if (token == null) {
+        print("🚨 Chưa đăng nhập hoặc thiếu token");
+        return false;
+      }
+      int? userId = await getUserId(); 
+      final response = await _dio.patch(
+        '/add-phone/$userId',
+        data: {
+          "phonenumber": phoneNumber,
+        },
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+
+      print("✅ Response: ${response.data}");
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      print("🚨 Lỗi thêm số điện thoại: ${e.response?.data ?? e.message}");
+      return false;
+    }
+}
   Future<bool> updateUser(String username, String email,String phonenumber ,String token) async {
     int? userId = await getUserId(); // 🔍 Lấy userId từ SharedPreferences
 

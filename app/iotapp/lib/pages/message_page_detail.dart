@@ -15,16 +15,18 @@ class MessagePageDetail extends StatelessWidget {
 
     if (contentParts.isNotEmpty && contentParts[0].contains('Nhiệt độ')) {
       final tempParts = contentParts[0].split(':');
-      temperatureStr = tempParts.length > 1
-          ? tempParts[1].replaceAll(RegExp(r'[^0-9.]'), '')
-          : "0";
+      temperatureStr =
+          tempParts.length > 1
+              ? tempParts[1].replaceAll(RegExp(r'[^0-9.]'), '')
+              : "0";
     }
 
     if (contentParts.length > 1 && contentParts[1].contains('Khói')) {
       final smokeParts = contentParts[1].split(':');
-      smokeLevelStr = smokeParts.length > 1
-          ? smokeParts[1].replaceAll(RegExp(r'[^0-9]'), '')
-          : "0";
+      smokeLevelStr =
+          smokeParts.length > 1
+              ? smokeParts[1].replaceAll(RegExp(r'[^0-9]'), '')
+              : "0";
     }
 
     final double temperature = double.tryParse(temperatureStr) ?? 0;
@@ -32,9 +34,7 @@ class MessagePageDetail extends StatelessWidget {
     final bool isDanger = temperature >= 50.0 || smokeLevel >= 800;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(tr("message_detail")),
-      ),
+      appBar: AppBar(title: Text(tr("message_detail"))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
