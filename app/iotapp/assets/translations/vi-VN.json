@@ -85,5 +85,10 @@
   "enter_phone": "Nhập số điện thoại",
   "phone_required": "Số điện thoại là bắt buộc",
   "phone":"Số điện thoại",
-  "register_success":"Đăng ký thành công"
+  "register_success":"Đăng ký thành công",
+  "device": "Thiết bị",
+  "add_device": "Thêm thiết bị",
+  "no_devices": "Không có thiết bị nào"
+
+
 }

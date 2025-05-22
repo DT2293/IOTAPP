@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:iotapp/models/device_model.dart';
+import 'package:iotapp/models/sensor_data.dart';
 import 'package:iotapp/pages/add_device_page.dart';
 import 'package:iotapp/pages/devicedetail_page.dart';
 import 'package:iotapp/pages/message_page.dart';
 import 'package:iotapp/pages/profile_page.dart';
-import 'package:iotapp/pages/qrscan_page.dart';
 import 'package:iotapp/pages/setting_page.dart';
 import 'package:iotapp/services/auth_service.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:iotapp/theme/list_device_provider.dart';
+import 'package:iotapp/widget/chart.dart';
+import 'package:provider/provider.dart';
 import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,24 +25,43 @@ class _HomePageState extends State<HomePage> {
   String? _token;
   String? _username;
   String? _email;
-  List<dynamic> _devices = [];
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeUserDataAndDevices();
+    });
   }
 
-  void _loadUserData() async {
-    String? token = await _authService.getToken();
-    Map<String, dynamic>? userData = await _authService.getUserInfo();
-    List<String> devices = await _authService.getUserDevices();
-    setState(() {
-      _token = token;
-      _username = userData?["username"];
-      _email = userData?["email"];
-      _devices = devices;
-    });
+  Future<void> _initializeUserDataAndDevices() async {
+    final token = await _authService.getToken();
+    final userData = await _authService.getUserInfo();
+    final deviceIds = await _authService.getUserDevices();
+
+    // Cập nhật trạng thái người dùng
+    if (mounted) {
+      setState(() {
+        _token = token;
+        _username = userData?["username"];
+        _email = userData?["email"];
+      });
+    }
+
+    // Tạo danh sách thiết bị và cập nhật provider
+    final devices =
+        deviceIds
+            .map(
+              (id) => Device(
+                deviceId: id,
+                deviceName: id,
+                location: '',
+                active: true,
+              ),
+            )
+            .toList();
+
+    Provider.of<DeviceListProvider>(context, listen: false).setDevices(devices);
   }
 
   void _logout() async {
@@ -53,6 +76,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy danh sách thiết bị từ provider, UI sẽ tự build lại khi danh sách thay đổi
+    final devices = Provider.of<DeviceListProvider>(context).devices;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(tr('home')),
@@ -65,6 +91,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: _buildDrawer(context),
+      // phần khác không đổi
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -77,53 +104,63 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10),
             Expanded(
               child:
-                  _devices.isEmpty
+                  devices.isEmpty
                       ? Center(child: Text(tr("no_devices")))
                       : ListView.builder(
-                        itemCount: _devices.length,
+                        itemCount: devices.length,
                         itemBuilder: (context, index) {
+                          final device = devices[index];
                           return Card(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 4,
                             margin: const EdgeInsets.symmetric(vertical: 8),
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.devices,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              title: Text(
-                                "${tr("device")}: ${_devices[index]}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              trailing: const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                              ),
-                              onTap: () async {
-                                String? userToken =
-                                    await _authService.getToken();
-                                if (userToken != null) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => DeviceDetailPage(
-                                            deviceId: _devices[index],
-                                            userToken: userToken,
-                                          ),
-                                    ),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(tr("token_error"))),
-                                  );
-                                }
-                              },
-                            ),
+                            child: ExpansionTile(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+    side: BorderSide.none,
+  ),
+  tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+  leading: Icon(
+    Icons.devices,
+    color: Theme.of(context).colorScheme.primary,
+  ),
+  title: Text(
+    "${tr("device")}: ${device.deviceName}",
+    style: const TextStyle(fontWeight: FontWeight.w500),
+  ),
+  trailing: const Icon(Icons.arrow_drop_down), // icon xổ xuống
+  children: [
+    Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: MiniLineChart(data: mockSensorData),
+    ),
+    TextButton.icon(
+      onPressed: () async {
+        final userToken = await _authService.getToken();
+        if (userToken != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DeviceDetailPage(
+                deviceId: device.deviceId,
+                userToken: userToken,
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(tr("token_error"))),
+          );
+        }
+      },
+      icon: const Icon(Icons.info_outline),
+      label: Text(tr("view_details")),
+    ),
+  ],
+)
+
                           );
                         },
                       ),
@@ -132,15 +169,13 @@ class _HomePageState extends State<HomePage> {
             Center(
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  Navigator.push(
+                  final added = await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddDevicePage(),
-                          ),
-                    );
-                  
+                    MaterialPageRoute(builder: (_) => const AddDevicePage()),
+                  );
+                  // Nếu bạn đã cập nhật provider trong AddDevicePage rồi thì không cần gọi lại
+                  // _initializeUserDataAndDevices();
                 },
-
                 icon: const Icon(Icons.add),
                 label: Text(tr("add_device")),
               ),
@@ -184,11 +219,9 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: ListView(
               children: [
-                _buildDrawerItem(
-                  Icons.home,
-                  tr('home'),
-                  () => Navigator.pop(context),
-                ),
+                _buildDrawerItem(Icons.home, tr('home'), () {
+                  Navigator.pop(context);
+                }),
                 _buildDrawerItem(Icons.message, tr('message'), () {
                   Navigator.push(
                     context,
@@ -196,11 +229,10 @@ class _HomePageState extends State<HomePage> {
                   );
                 }),
                 _buildDrawerItem(Icons.person, tr('profile'), () async {
-                  String? token = await _authService.getToken();
-                  Map<String, dynamic>? userData =
-                      await _authService.getUserInfo();
+                  final token = await _authService.getToken();
+                  final userData = await _authService.getUserInfo();
 
-                  if (userData != null && token != null) {
+                  if (token != null && userData != null) {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(

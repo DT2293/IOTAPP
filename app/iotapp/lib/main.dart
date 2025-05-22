@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:iotapp/theme/list_device_provider.dart';
 import 'package:provider/provider.dart';
-
 import 'package:iotapp/services/fcm_initializer.dart';
 import 'package:iotapp/services/websocket_service.dart';
 import 'package:iotapp/theme/message_provider.dart';
@@ -22,7 +22,7 @@ Future<void> main() async {
 
   // Khởi chạy ứng dụng
   runApp(
-    EasyLocalization(
+      EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
@@ -31,6 +31,7 @@ Future<void> main() async {
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
           ChangeNotifierProvider(create: (_) => WebSocketProvider()),
           ChangeNotifierProvider(create: (_) => MessageProvider()),
+          ChangeNotifierProvider(create: (_) => DeviceListProvider()),
         ],
         child: const MyApp(),
       ),

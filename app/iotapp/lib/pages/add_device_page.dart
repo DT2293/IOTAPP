@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:iotapp/models/device_model.dart';
-
 import 'package:iotapp/services/device_service.dart';
-
+import 'package:iotapp/theme/list_device_provider.dart';
 class AddDevicePage extends StatefulWidget {
   const AddDevicePage({super.key});
 
@@ -12,9 +12,9 @@ class AddDevicePage extends StatefulWidget {
 
 class _AddDevicePageState extends State<AddDevicePage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _deviceIdController = TextEditingController();
-  final TextEditingController _deviceNameController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
+  final _deviceIdController = TextEditingController();
+  final _deviceNameController = TextEditingController();
+  final _locationController = TextEditingController();
 
   final DeviceService _deviceService = DeviceService();
 
@@ -36,12 +36,19 @@ class _AddDevicePageState extends State<AddDevicePage> {
     try {
       await _deviceService.addDevice(newDevice);
 
+      // Cập nhật danh sách trong Provider
+      final deviceListProvider = Provider.of<DeviceListProvider>(context, listen: false);
+      deviceListProvider.setDevices([
+        ...deviceListProvider.devices,
+        newDevice,
+      ]);
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thiết bị được thêm thành công!')),
+        const SnackBar(content: Text('✅ Thiết bị được thêm thành công!')),
       );
 
-      Navigator.pop(context, true); // quay về và báo thành công
+      Navigator.pop(context, true); // quay lại HomePage và báo thành công
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -53,8 +60,16 @@ class _AddDevicePageState extends State<AddDevicePage> {
   }
 
   @override
+  void dispose() {
+    _deviceIdController.dispose();
+    _deviceNameController.dispose();
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-      return Scaffold(
+    return Scaffold(
       appBar: AppBar(title: const Text('Thêm Thiết Bị')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -65,20 +80,23 @@ class _AddDevicePageState extends State<AddDevicePage> {
               TextFormField(
                 controller: _deviceIdController,
                 decoration: const InputDecoration(labelText: 'Device ID'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Vui lòng nhập device ID' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Vui lòng nhập device ID'
+                    : null,
               ),
               TextFormField(
                 controller: _deviceNameController,
                 decoration: const InputDecoration(labelText: 'Tên thiết bị'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Vui lòng nhập tên' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Vui lòng nhập tên'
+                    : null,
               ),
               TextFormField(
                 controller: _locationController,
                 decoration: const InputDecoration(labelText: 'Vị trí'),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Vui lòng nhập vị trí' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Vui lòng nhập vị trí'
+                    : null,
               ),
               SwitchListTile(
                 value: _active,
