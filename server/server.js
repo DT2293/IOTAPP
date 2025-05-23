@@ -181,7 +181,7 @@ const sendData = async () => {
 };
 
 // Chạy sendData mỗi 2 giây
-setInterval(sendData, 2000);
+
 
 // 🚀 Khởi động HTTP + WebSocket Server
 const PORT = process.env.PORT || 3000;

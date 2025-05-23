@@ -61,7 +61,6 @@ void setup()
   //   delay(100);
   // }
 
-
   WiFi.mode(WIFI_STA);
   deviceId = WiFi.macAddress();
 
@@ -102,10 +101,8 @@ void loop()
   {
     stopAlert(); 
   }
-
-  
-  // Gửi trạng thái lên Blynk
-  Blynk.virtualWrite(V2, flameDetected ? "🔥 Có lửa!" : "✅ An toàn");
+      // Gửi trạng thái lên Blynk
+  Blynk.virtualWrite(V2, flameDetected ? "✅ An toàn" : "🔥 Có lửa!");
 
   // Cập nhật hiển thị với giá trị đã đo
   updateDisplay(flameDetected);
