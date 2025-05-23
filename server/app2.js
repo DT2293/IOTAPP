@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const SensorData = require("./models/sensordata");
-
-
+require("dotenv").config();
+const uri = process.env.MONGO_URI;
 //const SensorData = mongoose.model('SensorData', sensorDataSchema);
 
 mongoose.connect(process.env.MONGO_URI, {
