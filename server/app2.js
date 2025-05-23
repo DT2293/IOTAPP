@@ -10,10 +10,6 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log("✅ Kết nối MongoDB thành công!"))
   .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
 
-function randomDate(start, end) {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
 function generateRecords(deviceId, userId, count, flameCount) {
     const records = [];
     const startDate = new Date('2025-05-01');
