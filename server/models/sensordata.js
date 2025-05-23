@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const sensorDataSchema = new mongoose.Schema({
     deviceId: String,
     averageTemperature: Number,
-    averageHumidity: Number,
+    averageTemperature: Number,
     averageSmokeLevel: Number,
     flameDetected: Boolean,
     date: Date 
