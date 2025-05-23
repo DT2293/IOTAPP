@@ -164,8 +164,6 @@ const sendData = async () => {
                     await handleAlert(deviceId, newData);
                 }
             }
-
-
             previousData.set(deviceId, newData);
 
             // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
@@ -181,7 +179,7 @@ const sendData = async () => {
 };
 
 // Chạy sendData mỗi 2 giây
-
+// dữ liệu đọc ra từ web socket sẽ được lưu lại và tính trung bình lưu vào bảng sensordata vào cuối ngày và chỉ lưu trong vòng 30 ngày 
 
 // 🚀 Khởi động HTTP + WebSocket Server
 const PORT = process.env.PORT || 3000;

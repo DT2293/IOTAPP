@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { generateId } = require("../models/configs");
-const authMiddleware = require("../middleware/authMiddleware");
+const authMiddleware = require("../utils/authMiddleware");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 

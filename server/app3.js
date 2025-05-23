@@ -5,6 +5,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+require("./utils/dailydata.js"); // Import file dailydata.js để chạy cron job
 require("dotenv").config();
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
@@ -13,7 +14,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Kết nối MongoDB
+// Kết nối MongoDB  
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -167,35 +168,76 @@ wss.on("connection", async (ws) => {
 
  const { handleAlert } = require("./fcm_services/handleAlert");
 
-// Gửi dữ liệu định kỳ mỗi 2 giây
+// // Gửi dữ liệu định kỳ mỗi 2 giây
+// const sendData = async () => {
+//     const users = await User.find().select("userId devices");
+  
+//     for (const user of users) {
+//       for (const deviceId of user.devices) {
+//         const newData = await fetchData(deviceId);
+//         if (!newData) continue;
+  
+//         if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
+  
+//           // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
+//           if (newData.temperature > 70) {
+//             await handleAlert(deviceId, newData);
+//           }
+  
+//           previousData.set(deviceId, newData);
+  
+//           // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
+//           const userClients = clients.get(user.userId);
+//           if (userClients) {
+//             for (const client of userClients) {
+//               client.send(JSON.stringify({ type: "sensordatas", data: newData }));
+//             }
+//           }
+//         }
+//       }
+//     }
+//   };
+
+
+const SensorDataRaw = require('./models/sensordata_raw');
+
 const sendData = async () => {
     const users = await User.find().select("userId devices");
-  
+
     for (const user of users) {
-      for (const deviceId of user.devices) {
-        const newData = await fetchData(deviceId);
-        if (!newData) continue;
-  
-        if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
-  
-          // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
-          if (newData.temperature > 70) {
-            await handleAlert(deviceId, newData);
-          }
-  
-          previousData.set(deviceId, newData);
-  
-          // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
-          const userClients = clients.get(user.userId);
-          if (userClients) {
-            for (const client of userClients) {
-              client.send(JSON.stringify({ type: "sensordatas", data: newData }));
+        for (const deviceId of user.devices) {
+            const newData = await fetchData(deviceId);
+            if (!newData) continue;
+
+            // Lưu dữ liệu realtime mỗi lần lấy
+            await SensorDataRaw.create({
+                userId: user.userId,
+                deviceId,
+                temperature: newData.temperature,
+                humidity: newData.humidity,
+                smokeLevel: newData.smokeLevel,
+                flameDetected: newData.flame === 0,
+                timestamp: new Date()
+            });
+
+            // Xử lý cảnh báo
+            if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
+                if (newData.flame === 1) {
+                    await handleAlert(deviceId, newData);
+                }
             }
-          }
+            previousData.set(deviceId, newData);
+
+            // Gửi realtime qua WebSocket
+            const userClients = clients.get(user.userId);
+            if (userClients) {
+                for (const client of userClients) {
+                    client.send(JSON.stringify({ type: "realtime_data", data: newData }));
+                }
+            }
         }
-      }
     }
-  };
+};
   
 // Chạy sendData mỗi 2 giây
 setInterval(sendData, 2000);

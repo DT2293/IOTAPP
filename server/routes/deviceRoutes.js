@@ -4,7 +4,7 @@ const router = express.Router();
 const Device = require("../models/Device");
 const User = require("../models/user");
 //const { generateId } = require("../models/configs"); // ✅ Thêm hàm generateId
-const authMiddleware = require("../middleware/authMiddleware");
+const authMiddleware = require("../utils/authMiddleware");
 
 //  Thêm thiết bị mới
 //const { generateId } = require("../models/configs"); 

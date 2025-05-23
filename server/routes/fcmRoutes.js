@@ -46,7 +46,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = require("../models/user");
-const authMiddleware = require("../middleware/authMiddleware");
+const authMiddleware = require("../utils/authMiddleware");
 
 // ✅ Thêm FCM token vào mảng (nếu chưa có)
 router.post("/", authMiddleware, async (req, res) => {

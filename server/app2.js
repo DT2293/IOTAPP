@@ -1,18 +1,14 @@
 const mongoose = require('mongoose');
+const SensorData = require("./models/sensordata");
 
-const sensorDataSchema = new mongoose.Schema({
-    userId: { type: Number, required: true },
-    deviceId: { type: String, required: true },
-    temperature: { type: Number, required: true },
-    humidity: { type: Number, required: true },
-    smokeLevel: { type: Number, required: true },
-    flameDetected: { type: Boolean, default: false, required: true },
-    timestamp: { type: Date, default: Date.now }
-});
 
-const SensorData = mongoose.model('SensorData', sensorDataSchema);
+//const SensorData = mongoose.model('SensorData', sensorDataSchema);
 
-const uri = 'mongodb://localhost:27017/iotdb'; // Thay bằng URI thật nếu cần
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => console.log("✅ Kết nối MongoDB thành công!"))
+  .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
 
 function randomDate(start, end) {
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
@@ -20,8 +16,8 @@ function randomDate(start, end) {
 
 function generateRecords(deviceId, userId, count, flameCount) {
     const records = [];
-    const startDate = new Date('2025-04-01');
-    const endDate = new Date('2025-05-23');
+    const startDate = new Date('2025-05-01');
+    const endDate = new Date('2025-05-22');
 
     for (let i = 0; i < count; i++) {
         const hasFlame = i < flameCount;
@@ -45,8 +41,8 @@ async function run() {
         await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
         const records = [
-            ...generateRecords('24:0A:C4:00:01:10', 1, 15, 2), // 15 bản ghi, 2 có cháy
-            ...generateRecords('40:22:D8:05:1B:88', 2, 35, 3), // 35 bản ghi, 3 có cháy
+            ...generateRecords('24:0A:C4:00:01:10', 1, 11, 2), 
+            ...generateRecords('40:22:D8:05:1B:88', 2, 11, 3), 
         ];
 
         await SensorData.insertMany(records);
