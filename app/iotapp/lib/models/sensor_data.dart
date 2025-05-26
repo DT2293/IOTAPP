@@ -17,9 +17,9 @@ class SensorData {
     return SensorData(
       averageTemperature: (json['averageTemperature'] ?? 0).toDouble(),
       averageHumidity: (json['averageHumidity'] ?? 0).toDouble(),
-      averageSmokeLevel: json['averageSmokeLevel'] ?? 0,
+      averageSmokeLevel: (json['averageSmokeLevel'] ?? 0).toInt(),
       flameDetected: json['flameDetected'] ?? false,
-      date: DateTime.parse(json['date']),
+      date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
     );
   }
 }

@@ -9,7 +9,7 @@ router.get('/sensordata/:deviceId', authMiddleware, async (req, res) => {
   try {
     const records = await SensorData.find({ deviceId })
       .sort({ timestamp: 1 })
-      .select('temperature humidity smokeLevel flameDetected timestamp -_id'); // chỉ lấy trường cần thiết
+      .select('averageTemperature averageHumidity averageSmokeLevel flameDetected timestamp -_id'); // chỉ lấy trường cần thiết
 
     res.json(records);
   } catch (error) {

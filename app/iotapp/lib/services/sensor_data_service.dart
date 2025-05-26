@@ -23,17 +23,18 @@ class SensorService {
   }
 
   Future<List<SensorData>> getSensorData(String deviceId) async {
-    try {
-      final response = await _dio.get('baseUrl/sensordata/$deviceId');
-      if (response.statusCode == 200) {
-        final data = response.data as List;
-        return data.map((e) => SensorData.fromJson(e)).toList();
-      } else {
-        throw Exception('Failed to load sensor data');
-      }
-    } catch (e) {
-      print('❌ SensorService error: $e');
-      rethrow;
+  try {
+    final response = await _dio.get('/sensordata/$deviceId');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = response.data;
+      return data.map((e) => SensorData.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load sensor data');
     }
+  } catch (e) {
+    print('❌ SensorService error: $e');
+    rethrow;
   }
+}
+
 }
