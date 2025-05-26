@@ -1,6 +1,10 @@
-#define BLYNK_TEMPLATE_ID "TMPL6lIbB6__g"
-#define BLYNK_TEMPLATE_NAME "sensor"
-#define BLYNK_AUTH_TOKEN "NoyfeonUVqzMsSW6yGK2fIyEbOsI9FTf"
+// #define BLYNK_TEMPLATE_ID "TMPL6lIbB6__g"
+// #define BLYNK_TEMPLATE_NAME "sensor"
+// #define BLYNK_AUTH_TOKEN "NoyfeonUVqzMsSW6yGK2fIyEbOsI9FTf"
+
+#define BLYNK_TEMPLATE_ID "TMPL66YWsXpxC"
+#define BLYNK_TEMPLATE_NAME "dung3"
+#define BLYNK_AUTH_TOKEN "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7"
 #include "config.h"
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
@@ -12,10 +16,12 @@
 #include <WiFi.h>
 #include <WiFiManager.h>
 #include <BlynkSimpleEsp32.h>
+#include "dht22/dht22.h"
+#include "mq2/mq_sensor.h"
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 unsigned long lastPrintTime = 0;
 
-String deviceId; 
+String deviceId;
 void setup()
 {
   Serial.begin(115200);
@@ -26,15 +32,18 @@ void setup()
   initFlameSensor();
   initLedBuzzer();
   digitalWrite(BUZZER_PIN, LOW);
-// Nếu ESP32 không kết nối được WiFi đã lưu thì sẽ tạo AP để cấu hình
+  // Nếu ESP32 không kết nối được WiFi đã lưu thì sẽ tạo AP để cấu hình
   Serial.println("Khởi động WiFiManager...");
 
   WiFiManager wifiManager;
-  if (!wifiManager.autoConnect("ESP32-Config-AP")) {
+  if (!wifiManager.autoConnect("ESP32-Config-AP"))
+  {
     Serial.println("Không kết nối được WiFi và cấu hình WiFi thất bại!");
     // Có thể reset lại hoặc dừng ở đây tùy nhu cầu
     // ESP.restart();
-  } else {
+  }
+  else
+  {
     Serial.println("WiFi đã kết nối!");
     Serial.print("Địa chỉ IP hiện tại: ");
     Serial.println(WiFi.localIP());
@@ -69,14 +78,16 @@ void setup()
   showQRCode(jsonPayload);
 
   unsigned long qrStartTime = millis();
-  while (millis() - qrStartTime < 6000) {
-    Blynk.run();  // Giữ kết nối Blynk trong lúc hiển thị QR
-    delay(100);
+  while (millis() - qrStartTime < 6000)
+  {
+    Blynk.run(); // Giữ kết nối Blynk trong lúc hiển thị QR
+    delay(10);
   }
 
   // Khởi động Blynk sau khi WiFi đã kết nối
   Blynk.config(BLYNK_AUTH_TOKEN);
-  while (Blynk.connect() == false) {
+  while (Blynk.connect() == false)
+  {
     delay(500);
     Serial.println("Đang kết nối Blynk...");
   }
@@ -84,33 +95,124 @@ void setup()
   Serial.println("Setup hoàn thành.");
 }
 
+// void loop()
+// {
+//   int analogVal, digitalVal;
+//   bool flameDetected = isFlameDetected(analogVal, digitalVal);
+
+//   float temp, humi;
+//   if (readDhtSensor(temp, humi)) {
+//     Blynk.virtualWrite(V1, temp);
+//     Blynk.virtualWrite(V2, humi);
+//     Serial.print("Nhiệt độ: ");
+//     Serial.print(temp);
+//     Serial.print(" °C  |  Độ ẩm: ");
+//     Serial.print(humi);
+//     Serial.println(" %");
+//   } else {
+//     Serial.println("❌ Không đọc được cảm biến DHT22");
+//   }
+
+//   int analogValue;
+// int digitalValue;
+// readMQSensor(analogVal, digitalVal);
+
+//   Serial.printf("MQ2 - Analog: %d | Digital: %d\n", analogVal, digitalVal);
+
+//   // Kiểm tra rò rỉ khí gas
+//   if (analogVal > 800 || digitalVal == LOW) {
+//     Serial.println("⚠️ CẢNH BÁO: Phát hiện rò rỉ khí gas!");
+//     // Bật còi, gửi cảnh báo, kích relay, ...
+//   } else {
+//     Serial.println("✅ An toàn - không phát hiện khí gas.");
+//   }
+//   if (digitalVal == -1 || analogVal > 4095)
+//   {
+//     noSignalAlert();
+//   }
+//   else if (flameDetected)
+//   {
+//     startAlert();
+//   }
+//   else
+//   {
+//     stopAlert();
+//   }
+//       // Gửi trạng thái lên Blynk
+//   Blynk.virtualWrite(V5, flameDetected ?  "🔥 Có lửa!":"✅ An toàn" );
+
+//   // Cập nhật hiển thị với giá trị đã đo
+//   updateDisplay(flameDetected);
+
+//   // Gọi Blynk
+//   Blynk.run();
+// }
+
 void loop()
 {
-  int analogVal, digitalVal;
-  bool flameDetected = isFlameDetected(analogVal, digitalVal);
+  // Đọc cảm biến lửa
+  int analogFlameVal, digitalFlameVal;
+  bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
 
-  if (digitalVal == -1 || analogVal > 4095)
+  // Đọc cảm biến DHT22
+  float temp, humi;
+  if (readDhtSensor(temp, humi))
   {
-    noSignalAlert(); 
-  }
-  else if (flameDetected)
-  {
-    startAlert(); 
+    Blynk.virtualWrite(V1, temp); // Gửi nhiệt độ lên Blynk
+    Blynk.virtualWrite(V2, humi); // Gửi độ ẩm lên Blynk
+    Serial.printf("Nhiệt độ: %.2f °C  |  Độ ẩm: %.2f %%\n", temp, humi);
   }
   else
   {
-    stopAlert(); 
+    Serial.println("❌ Không đọc được cảm biến DHT22");
   }
-      // Gửi trạng thái lên Blynk
-  Blynk.virtualWrite(V2, flameDetected ? "✅ An toàn" : "🔥 Có lửa!");
 
-  // Cập nhật hiển thị với giá trị đã đo
+  // Đọc cảm biến khí gas MQ2
+  int analogGasVal, digitalGasVal;
+  readMQSensor(analogGasVal, digitalGasVal);
+  bool gasLeaked = (analogGasVal > 800 || digitalGasVal == LOW);
+  Blynk.virtualWrite(V3, analogGasVal);
+
+  // Gửi trạng thái cảnh báo lên V6
+  if (gasLeaked)
+  {
+    Blynk.virtualWrite(V6, "⚠️ Rò rỉ khí gas!");
+    Blynk.virtualWrite(V7, 255); // Bật LED (giá trị 255)
+  }
+  else
+  {
+    Blynk.virtualWrite(V6, "✅ Không có rò rỉ khí gas");
+    Blynk.virtualWrite(V7, 0); // Tắt LED
+  }
+
+  // Phát cảnh báo nếu tín hiệu lỗi hoặc phát hiện lửa/gas
+  if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1)
+  {
+    noSignalAlert(); // Cảnh báo mất tín hiệu
+  }
+  else if (flameDetected || gasLeaked)
+  {
+    Blynk.virtualWrite(V5, 255);
+    startAlert(); // Phát còi hoặc cảnh báo
+  }
+  else
+  {
+    stopAlert(); // Dừng còi
+  }
+
+  // Gửi trạng thái lên Blynk
+  Blynk.virtualWrite(V8, flameDetected ? "🔥 Có lửa!" : "✅ An toàn");
+
+  // Cập nhật hiển thị OLED
   updateDisplay(flameDetected);
 
-  // Gọi Blynk
   Blynk.run();
 }
 
+BLYNK_CONNECTED()
+{
+  Blynk.virtualWrite(V4, deviceId); // V4 sẽ hiển thị deviceId
+}
 
 // #define BLYNK_TEMPLATE_ID "TMPL6lIbB6__g"
 // #define BLYNK_TEMPLATE_NAME "sensor"
@@ -129,7 +231,6 @@ void loop()
 // Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // unsigned long lastPrintTime = 0;
 // String deviceId;  // Global variable to store MAC address
-
 
 // void setup()
 // {
@@ -186,7 +287,6 @@ void loop()
 //   Serial.println("Setup hoàn thành.");
 // }
 
-
 // void loop()
 // {
 //   int analogVal, digitalVal;
@@ -195,15 +295,15 @@ void loop()
 
 //   if (digitalVal == -1 || analogVal > 4095)
 //   {
-//     noSignalAlert(); 
+//     noSignalAlert();
 //   }
 //   else if (flameDetected)
 //   {
-//     startAlert(); 
+//     startAlert();
 //   }
 //   else
 //   {
-//     stopAlert(); 
+//     stopAlert();
 //   }
 //   Blynk.virtualWrite(V2, flameDetected ? "🔥 Có lửa!" : "✅ An toàn");
 //   updateDisplay(isFlameDetected(analogVal, digitalVal));
@@ -213,8 +313,6 @@ void loop()
 // BLYNK_CONNECTED() {
 //   Blynk.virtualWrite(V0, deviceId);  // V4 sẽ hiển thị deviceId
 // }
-
-
 
 // #include "config.h"
 // #include <Adafruit_SSD1306.h>
@@ -229,7 +327,6 @@ void loop()
 
 // Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // unsigned long lastPrintTime = 0;
-
 
 // void setup()
 // {
@@ -286,15 +383,15 @@ void loop()
 
 //   if (digitalVal == -1 || analogVal > 4095)
 //   {
-//     noSignalAlert(); 
+//     noSignalAlert();
 //   }
 //   else if (flameDetected)
 //   {
-//     startAlert(); 
+//     startAlert();
 //   }
 //   else
 //   {
-//     stopAlert(); 
+//     stopAlert();
 //   }
 
 //   updateDisplay(isFlameDetected(analogVal, digitalVal));

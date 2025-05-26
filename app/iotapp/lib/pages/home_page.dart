@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iotapp/models/device_model.dart';
-import 'package:iotapp/models/sensor_data.dart';
 import 'package:iotapp/pages/add_device_page.dart';
+import 'package:iotapp/pages/chart_page.dart';
 import 'package:iotapp/pages/devicedetail_page.dart';
 import 'package:iotapp/pages/message_page.dart';
 import 'package:iotapp/pages/profile_page.dart';
@@ -9,7 +9,7 @@ import 'package:iotapp/pages/setting_page.dart';
 import 'package:iotapp/services/auth_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:iotapp/theme/list_device_provider.dart';
-import 'package:iotapp/widget/chart.dart';
+
 import 'package:provider/provider.dart';
 import 'login_page.dart';
 
@@ -24,8 +24,7 @@ class _HomePageState extends State<HomePage> {
   final AuthService _authService = AuthService();
   String? _token;
   String? _username;
-  String? _email;
-
+  String? _email; // Thay thế bằng ID thiết bị mặc định hoặc từ dữ liệu người dùng
   @override
   void initState() {
     super.initState();
@@ -116,51 +115,45 @@ class _HomePageState extends State<HomePage> {
                             ),
                             elevation: 4,
                             margin: const EdgeInsets.symmetric(vertical: 8),
-                            child: ExpansionTile(
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(12),
-    side: BorderSide.none,
-  ),
-  tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-  leading: Icon(
-    Icons.devices,
-    color: Theme.of(context).colorScheme.primary,
-  ),
-  title: Text(
-    "${tr("device")}: ${device.deviceName}",
-    style: const TextStyle(fontWeight: FontWeight.w500),
-  ),
-  trailing: const Icon(Icons.arrow_drop_down), // icon xổ xuống
-  children: [
-    Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: MiniLineChart(data: mockSensorData),
-    ),
-    TextButton.icon(
-      onPressed: () async {
-        final userToken = await _authService.getToken();
-        if (userToken != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DeviceDetailPage(
-                deviceId: device.deviceId,
-                userToken: userToken,
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(tr("token_error"))),
-          );
-        }
-      },
-      icon: const Icon(Icons.info_outline),
-      label: Text(tr("view_details")),
-    ),
-  ],
-)
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () async {
+                                final userToken = await _authService.getToken();
+                                if (userToken != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => DeviceDetailPage(
+                                            deviceId: device.deviceId,
+                                            userToken: userToken,
+                                          ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(tr("token_error"))),
+                                  );
+                                }
+                              },
 
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                leading: Icon(
+                                  Icons.devices,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                title: Text(
+                                  "${tr("device")}: ${device.deviceName}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -254,6 +247,20 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                 }),
+                _buildDrawerItem(Icons.bar_chart, tr('statistics'), () {
+                  final devices = Provider.of<DeviceListProvider>(context, listen: false).devices;
+                  if (devices.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(tr('no_devices'))),
+                    );
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ChartPage()),
+                  );
+                }),
+
                 _buildDrawerItem(Icons.settings, tr('settings'), () {
                   Navigator.push(
                     context,

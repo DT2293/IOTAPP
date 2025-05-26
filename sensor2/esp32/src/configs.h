@@ -1,10 +1,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define MQ_ANALOG_PIN 35
+#define MQ_DIGITAL_PIN 13
+
 // Pin definitions
 #define BUZZER_PIN     15
 #define FLAME_SENSOR_PIN 34
 #define FLAME_SENSOR_ANALOG_PIN 32
+#define DHT_SENSOR_PIN 4
 
 #define RED_LED        27
 #define YELLOW_LED     26

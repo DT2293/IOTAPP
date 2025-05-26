@@ -9,36 +9,6 @@ require("dotenv").config();
 
 const router = express.Router({ strict: false });
 
-// Đăng ký người dùng
-// router.post("/register", async (req, res) => {
-//     try {
-//         let { username, email, phonenumber ,password } = req.body;
-
-//         email = email.toLowerCase().trim();
-//         username = username.toLowerCase().trim();
-//         phonenumber = phonenumber.toLowerCase().trim();
-
-//         const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-//         if (existingUser) {
-//             return res.status(400).json({
-//                 error: existingUser.email === email ? "Email đã được sử dụng!" : "Username đã được sử dụng!"
-//             });
-//         }
-
-//         const hashedPassword = await bcrypt.hash(password, 10);
-//         const userId = await generateId("User");
-
-//         if (!userId) return res.status(500).json({ error: "Không thể tạo userId!" });
-
-//         const newUser = new User({ userId, username, phonenumber, email, password: hashedPassword });
-//         await newUser.save();
-
-//         res.status(201).json({ message: "Đăng ký thành công!", user: newUser });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: "Lỗi khi đăng ký" });
-//     }
-// });
 
 router.post("/register", async (req, res) => {
     try {
@@ -71,6 +41,29 @@ router.post("/register", async (req, res) => {
         res.status(500).json({ error: "Lỗi khi đăng ký" });
     }
 });
+router.get("/devices/:userId", authMiddleware, async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+
+    // Kiểm tra userId trong token có giống userId truy vấn không để bảo mật
+    if (userId !== req.user.userId) {
+      return res.status(403).json({ error: "Bạn không có quyền truy cập thiết bị của user khác!" });
+    }
+
+    // Tìm user và populate devices
+    const user = await User.findOne({ userId }).populate('devices').exec();
+
+    if (!user) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng!" });
+    }
+
+    // Trả về mảng devices đã populate
+    return res.json({ devices: user.devices });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách thiết bị:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
 
 
 router.post("/login", async (req, res) => {
@@ -92,35 +85,7 @@ router.post("/login", async (req, res) => {
         res.status(500).json({ error: "Lỗi khi đăng nhập" });
     }
 });
-// Cập nhật thông tin user
-//router.put("/update/:userId", authMiddleware, async (req, res) => {
-//     try {
-//         const { username, email } = req.body;
-//         const userId = Number(req.params.userId); // 🔹 Chuyển userId về kiểu số
-
-//         if (userId !== req.user.userId) {
-//             return res.status(403).json({ error: "Bạn không có quyền cập nhật thông tin này!" });
-//         }
-
-//         const user = await User.findOne({ userId });
-//         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
-
-//         if (username) user.username = username;
-//         if (email) {
-//             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//             if (!emailRegex.test(email)) {
-//                 return res.status(400).json({ error: "Email không hợp lệ!" });
-//             }
-//             user.email = email.toLowerCase().trim();
-//         }
-
-//         await user.save();
-//         res.json({ message: "Cập nhật thành công!", user });
-//     } catch (error) {
-//         console.error("Lỗi cập nhật:", error);
-//         res.status(500).json({ error: "Lỗi khi cập nhật thông tin" });
-//     }
-// });
+// Cập nhật thông tin người dùng
 router.put("/update/:userId", authMiddleware, async (req, res) => {
     try {
         const { username, email, phonenumber } = req.body;

@@ -9,6 +9,6 @@ const deviceSchema = new mongoose.Schema({
 });
 
 // Đặt collection thành "devices"
-const Device = mongoose.model("Device", deviceSchema, "devices");
+const Device = mongoose.model("Device", deviceSchema, "devices");   
 
 module.exports = Device;

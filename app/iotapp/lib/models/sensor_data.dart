@@ -1,23 +1,25 @@
 class SensorData {
-  final DateTime time;
-  final double temperature;
-  final double humidity;
-  final double smoke;
+  final double averageTemperature;
+  final double averageHumidity;
+  final int averageSmokeLevel;
+  final bool flameDetected;
+  final DateTime date;
 
   SensorData({
-    required this.time,
-    required this.temperature,
-    required this.humidity,
-    required this.smoke,
+    required this.averageTemperature,
+    required this.averageHumidity,
+    required this.averageSmokeLevel,
+    required this.flameDetected,
+    required this.date,
   });
-}
 
-List<SensorData> mockSensorData = List.generate(20, (index) {
-  final now = DateTime.now();
-  return SensorData(
-    time: now.subtract(Duration(minutes: 20 - index)),
-    temperature: 20 + index * 0.5,
-    humidity: 60 - index * 0.3,
-    smoke: 30 + (index % 5) * 2.0,
-  );
-});
+  factory SensorData.fromJson(Map<String, dynamic> json) {
+    return SensorData(
+      averageTemperature: (json['averageTemperature'] ?? 0).toDouble(),
+      averageHumidity: (json['averageHumidity'] ?? 0).toDouble(),
+      averageSmokeLevel: json['averageSmokeLevel'] ?? 0,
+      flameDetected: json['flameDetected'] ?? false,
+      date: DateTime.parse(json['date']),
+    );
+  }
+}
