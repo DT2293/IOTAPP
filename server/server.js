@@ -164,7 +164,7 @@ const sendData = async () => {
   
     for (const user of users) {
       for (const deviceId of user.devices) {
-        const newData = await fetchData(deviceId);
+      const newData = await fetchData(deviceId);
         if (!newData) continue;
   
         if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
