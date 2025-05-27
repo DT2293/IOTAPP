@@ -16,8 +16,10 @@ unsigned long lastPrintTime = 0;
 
 String deviceId;
 
-void sendDataToServer(int gas, bool flameDetected) {
-  if (WiFi.status() == WL_CONNECTED) {
+void sendDataToServer(int gas, bool flameDetected)
+{
+  if (WiFi.status() == WL_CONNECTED)
+  {
     HTTPClient http;
     http.begin("http://dungtc.iothings.vn/api/sensordata"); // Thay bằng IP server của bạn
     http.addHeader("Content-Type", "application/json");
@@ -25,21 +27,26 @@ void sendDataToServer(int gas, bool flameDetected) {
     StaticJsonDocument<256> doc;
     doc["deviceId"] = deviceId;
     doc["smokeLevel"] = gas;
-  //  doc["flame"] = flameDetected ? 1 : 0;
-doc["flame"] = flameDetected; // gửi đúng kiểu boolean
+    //  doc["flame"] = flameDetected ? 1 : 0;
+    doc["flame"] = flameDetected; // gửi đúng kiểu boolean
 
     String requestBody;
     serializeJson(doc, requestBody);
 
     int httpResponseCode = http.POST(requestBody);
-    if (httpResponseCode > 0) {
+    if (httpResponseCode > 0)
+    {
       Serial.printf("✅ Gửi thành công: %d\n", httpResponseCode);
-    } else {
+    }
+    else
+    {
       Serial.printf("❌ Gửi thất bại: %s\n", http.errorToString(httpResponseCode).c_str());
     }
 
     http.end();
-  } else {
+  }
+  else
+  {
     Serial.println("❌ Không có WiFi!");
   }
 }
@@ -59,7 +66,6 @@ void setup()
   if (!wifiManager.autoConnect("ESP32-Config-AP"))
   {
     Serial.println("Không kết nối được WiFi và cấu hình WiFi thất bại!");
-
   }
   else
   {
@@ -96,10 +102,12 @@ unsigned long sensorInterval = 2000;
 unsigned long lastAlertCheck = 0;
 unsigned long alertInterval = 500;
 
-void loop() {
+void loop()
+{
   unsigned long currentMillis = millis();
 
-  if (currentMillis - lastSensorRead >= sensorInterval) {
+  if (currentMillis - lastSensorRead >= sensorInterval)
+  {
     lastSensorRead = currentMillis;
 
     int analogFlameVal, digitalFlameVal;
@@ -114,7 +122,8 @@ void loop() {
     updateDisplay(flameDetected);
   }
 
-  if (currentMillis - lastAlertCheck >= alertInterval) {
+  if (currentMillis - lastAlertCheck >= alertInterval)
+  {
     lastAlertCheck = currentMillis;
 
     int analogGasVal, digitalGasVal;
@@ -123,11 +132,16 @@ void loop() {
     int analogFlameVal, digitalFlameVal;
     bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
 
-    if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1) {
+    if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1)
+    {
       noSignalAlert();
-    } else if (flameDetected || gasLeaked) {
+    }
+    else if (flameDetected || gasLeaked)
+    {
       startAlert();
-    } else {
+    }
+    else
+    {
       stopAlert();
     }
   }

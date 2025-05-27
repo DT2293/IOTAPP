@@ -14,8 +14,8 @@
 #define YELLOW_LED     26
 #define GREEN_LED      25
 
-// #define SDA_DS3231 16
-// #define SCL_DS3231 17
+#define SDA_DS3231 16
+#define SCL_DS3231 17
 
 
 // OLED
