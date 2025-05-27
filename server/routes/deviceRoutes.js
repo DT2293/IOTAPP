@@ -30,6 +30,28 @@ const authMiddleware = require("../utils/authMiddleware");
 //     }
 // };
 
+
+router.get("/devices/:userId", authMiddleware, async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+
+    // Bảo mật: kiểm tra token user có quyền lấy dữ liệu này
+    if (userId !== req.user.userId) {
+      return res.status(403).json({ error: "Bạn không có quyền truy cập thiết bị của user khác!" });
+    }
+
+    // Lấy danh sách device của user từ bảng device
+    const devices = await Device.find({ userId });
+
+    return res.json({ devices });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách thiết bị:", error);
+    return res.status(500).json({ error: "Lỗi server" });
+  }
+});
+
+
+
 // API thêm thiết bị
 router.post("/", authMiddleware, async (req, res) => {
     try {

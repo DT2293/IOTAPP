@@ -151,6 +151,7 @@ wss.on("connection", async (ws) => {
 });
 
 const sendData = async () => {
+
   const users = await User.find().select("userId devices");
 
   for (const user of users) {
