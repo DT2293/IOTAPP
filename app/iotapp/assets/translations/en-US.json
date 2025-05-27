@@ -87,8 +87,18 @@
   "phone": "Phone number",
   "register_success": "Registration successful",
   "device": "Device",
-  "add_device": "Add Device",
+  "add_device": "Add Device", 
   "no_devices": "No devices available",
    "staticscal": "Statistics Chart",
-  "device_status": "Status"
+  "device_status": "Status",
+    "add_phone_success": "Phone number added successfully",
+  "add_phone_failed": "Failed to add phone number",
+  "empty_username_email": "Username and Email cannot be empty",
+  "no_userid_token": "User ID or token not found",
+  "update_failed": "Update failed",
+  "add": "Add",
+  "location": "Location",
+  "location_required": "Location is required",
+  "active": "Active"
+
 }

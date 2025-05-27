@@ -61,28 +61,30 @@ Future<List<Device>> getDevicesByUserId(int userId) async {
       throw Exception('Thêm thiết bị thất bại: $msg');
     }
   }
+
+    Future<void> updateDevice(String deviceId, Device device) async {
+    try {
+      final encodedId = Uri.encodeComponent(deviceId.trim());
+      await _dio.put(
+        '/devices/$encodedId',
+        data: {
+          "deviceName": device.deviceName,
+          "location": device.location,
+          "active": device.active,
+        },
+      );
+    } on DioException catch (e) {
+      final msg = e.response?.data['error'] ?? 'Lỗi không xác định';
+      throw Exception('Cập nhật thiết bị thất bại: $msg');
+    }
+  }
 }
 
 
 //   /// 🟢 Thêm thiết bị
 
 //   /// 🟢 Cập nhật thiết bị
-//   Future<void> updateDevice(String deviceId, Device device) async {
-//     try {
-//       final encodedId = Uri.encodeComponent(deviceId.trim());
-//       await _dio.put(
-//         '/devices/$encodedId',
-//         data: {
-//           "deviceName": device.deviceName,
-//           "location": device.location,
-//           "active": device.active,
-//         },
-//       );
-//     } on DioException catch (e) {
-//       final msg = e.response?.data['error'] ?? 'Lỗi không xác định';
-//       throw Exception('Cập nhật thiết bị thất bại: $msg');
-//     }
-//   }
+
 
 //   /// 🟢 Xóa thiết bị
 //   Future<void> deleteDevice(String deviceId) async {

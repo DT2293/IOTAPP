@@ -237,43 +237,6 @@ Future<bool> autoLogin() async {
     }
   }
 
-  // Future<bool> addPhoneUser(String phonenumber,String token) async {
-  //   // int? userId = await getUserId(); // 🔍 Lấy userId từ SharedPreferences
-
-  //   // if (userId == null) {
-  //   //   print("🚨 Không tìm thấy userId!");
-  //   //   return false;
-  //   // }
-
-  //   try {
-  //     // print("🔑 Token: $token");
-  //     // print("📌 userId: ${userId.toString()}");
-
-  //     final response = await _dio.patch(
-  //       '/addphone',
-  //       data: {
-  //       //  "username": username,
-  //         "phonenumber":phonenumber,
-  //       //  "email": email,
-  //       },
-  //       options: Options(
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Authorization": "Bearer $token",
-  //         },
-  //       ),
-  //     );
-
-  //     print("Response Status: ${response.statusCode}");
-  //     print("Response Data: ${response.data}");
-
-  //     return response.statusCode == 200;
-  //   } on DioException catch (e) {
-  //     print("🚨 Lỗi : ${e.response?.data ?? e.message}");
-  //     return false;
-  //   }
-  // }
-
 Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     try {
 
@@ -285,7 +248,7 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
       final response = await _dio.patch(
         '/add-phone/$userId',
         data: {
-          "phonenumber": phoneNumber,
+         "newPhone": phoneNumber,
         },
         options: Options(
           headers: {

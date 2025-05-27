@@ -41,38 +41,51 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const clients = new Map();
 const previousData = new Map();
-const BLYNK_TOKEN = "NoyfeonUVqzMsSW6yGK2fIyEbOsI9FTf";
+app.post("/api/sensordata", async (req, res) => {
+  try {
+    const { deviceId, temperature, humidity, smokeLevel, flame } = req.body;
 
-
-// 📡 Lấy dữ liệu từ Blynk
-const fetchData = async (deviceId) => {
-    try {
-        const [flame] = await Promise.all([
-            //axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V2`),
-            //axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`),
-            axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V1`),
-        ]);
-
-        const data = {
-            deviceId,
-            flame: parseInt(flame.data),
-            //    temperature: parseFloat(tempRes.data),
-            //   humidity: parseFloat(humidRes.data),
-            //  smokeLevel: parseInt(smokeRes.data),
-        };
-
-        // if (isNaN(data.temperature) || isNaN(data.humidity) || isNaN(data.smokeLevel)) {
-        //     console.warn(`⚠️ Dữ liệu không hợp lệ từ ${deviceId}:`, data);
-        //     return null;
-        // }
-
-        return data;
-    } catch (error) {
-        console.error(`❌ Lỗi lấy dữ liệu từ Blynk (${deviceId}):`, error.message);
-        return null;
+    // Kiểm tra dữ liệu hợp lệ
+    if (
+      typeof temperature !== "number" ||
+      typeof humidity !== "number" ||
+      typeof smokeLevel !== "number" ||
+      typeof flame !== "boolean"
+    ) {
+      return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
     }
-};
 
+    // Log dữ liệu
+    console.log(`📥 Dữ liệu từ thiết bị ${deviceId}:`);
+    console.log(`🌡 Nhiệt độ: ${temperature}°C`);
+    console.log(`💧 Độ ẩm: ${humidity}%`);
+    console.log(`💨 Mức khói: ${smokeLevel}`);
+    console.log(`🔥 Lửa: ${flame ? "Có" : "Không"}`);
+    console.log("------------------------------------");
+
+    // Lưu data vào biến previousData hoặc DB
+    previousData.set(deviceId, { deviceId, temperature, humidity, smokeLevel, flame, time: new Date() });
+
+    // Gửi realtime cho tất cả user có quyền deviceId
+    const users = await User.find({ devices: deviceId }).select("userId devices");
+
+    for (const user of users) {
+      const userClients = clients.get(user.userId);
+      if (userClients) {
+        for (const ws of userClients) {
+          if (ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({ type: "sensordatas", data: previousData.get(deviceId) }));
+          }
+        }
+      }
+    }
+
+    res.status(200).json({ message: "Dữ liệu nhận thành công" });
+  } catch (error) {
+    console.error("❌ Lỗi xử lý dữ liệu:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+});
 // Xử lý kết nối WebSocket
 wss.on("connection", async (ws) => {
     console.log("⚡ Một client vừa kết nối, chờ xác thực...");
@@ -126,8 +139,7 @@ wss.on("connection", async (ws) => {
             if (!userDevices || !userDevices.devices.includes(data.deviceId)) {
                 console.warn(`⚠️ User ${ws.userId} không có quyền truy cập deviceId ${data.deviceId}`);
                 return;
-            }
-
+            }          
         } catch (err) {
             console.error("❌ Lỗi xử lý dữ liệu từ client:", err);
         }
@@ -148,39 +160,40 @@ wss.on("connection", async (ws) => {
     });
 });
 
-const { handleAlert } = require("./fcm_services/handleAlert2");
+ const { handleAlert } = require("./fcm_services/handleAlert");
 
 // Gửi dữ liệu định kỳ mỗi 2 giây
 const sendData = async () => {
     const users = await User.find().select("userId devices");
-
+  
     for (const user of users) {
-        for (const deviceId of user.devices) {
-            const newData = await fetchData(deviceId);
-            if (!newData) continue;
-
-            if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
-                if (newData.flame === 1) {
-                    await handleAlert(deviceId, newData);
-                }
+      for (const deviceId of user.devices) {
+        const newData = await fetchData(deviceId);
+        if (!newData) continue;
+  
+        if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
+  
+          // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
+          if (newData.temperature > 70) {
+            await handleAlert(deviceId, newData);
+          }
+  
+          previousData.set(deviceId, newData);
+  
+          // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
+          const userClients = clients.get(user.userId);
+          if (userClients) {
+            for (const client of userClients) {
+              client.send(JSON.stringify({ type: "sensordatas", data: newData }));
             }
-            previousData.set(deviceId, newData);
-
-            // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
-            const userClients = clients.get(user.userId);
-            if (userClients) {
-                for (const client of userClients) {
-                    client.send(JSON.stringify({ type: "sensordatas", data: newData }));
-                }
-            }
+          }
         }
+      }
     }
-    console.log("📡 Gửi dữ liệu thành công!");
-};
-
+  };
+  
 // Chạy sendData mỗi 2 giây
-// dữ liệu đọc ra từ web socket sẽ được lưu lại và tính trung bình lưu vào bảng sensordata vào cuối ngày và chỉ lưu trong vòng 30 ngày 
-
+setInterval(sendData, 2000);
 // 🚀 Khởi động HTTP + WebSocket Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

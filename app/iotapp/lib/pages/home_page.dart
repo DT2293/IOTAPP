@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
   void editDevice(BuildContext context, Device device) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EditDevicePage(device: device)),
+      MaterialPageRoute(builder: (context) => EditDevicePage(device: device, userToken: _token!,)),
     );
   }
 
