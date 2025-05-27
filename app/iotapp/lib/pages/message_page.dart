@@ -29,16 +29,16 @@ class MessagePage extends StatelessWidget {
                   final contentParts = msg.content.split(
                     ',',
                   ); // Tách nội dung theo dấu phẩy
-                  String temperature_number = "0";
+                  //String temperature_number = "0";
                   String smokeLevel_number = "0";
 
                   // Kiểm tra nếu phần đầu tiên là Nhiệt độ và lấy số
-                  if (contentParts.isNotEmpty &&
-                      contentParts[0].contains('Nhiệt độ')) {
-                    final tempParts = contentParts[0].split(':');
-                    temperature_number =
-                        tempParts.length > 1 ? tempParts[1].trim() : "0";
-                  }
+                  // if (contentParts.isNotEmpty &&
+                  //     contentParts[0].contains('Nhiệt độ')) {
+                  //   final tempParts = contentParts[0].split(':');
+                  //   temperature_number =
+                  //       tempParts.length > 1 ? tempParts[1].trim() : "0";
+                  // }
 
                   // Kiểm tra nếu phần thứ hai là Khói và lấy số
                   if (contentParts.length > 1 &&
@@ -57,17 +57,17 @@ class MessagePage extends StatelessWidget {
                     title: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${tr('temperature')}: $temperature_number',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight:
-                                msg.isRead
-                                    ? FontWeight.normal
-                                    : FontWeight.bold,
-                          ),
-                        ),
+                        // Text(
+                        //   '${tr('temperature')}: $temperature_number',
+                        //   maxLines: 1,
+                        //   overflow: TextOverflow.ellipsis,
+                        //   style: TextStyle(
+                        //     fontWeight:
+                        //         msg.isRead
+                        //             ? FontWeight.normal
+                        //             : FontWeight.bold,
+                        //   ),
+                        // ),
                         Text(
                           '${tr('smoke_level')}: $smokeLevel_number',
                           maxLines: 1,

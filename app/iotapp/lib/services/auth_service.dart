@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
-
+final FirebaseMessaging _fcm = FirebaseMessaging.instance;
  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
  // final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
   final FCMService fcmService = FCMService();
@@ -353,11 +353,25 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     return [];
   }
 
+  // Future<void> logout() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   await prefs.remove('token');
+  //   await prefs.remove('user');
+  // }
   Future<void> logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
-    await prefs.remove('user');
-  }
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // Xóa token và user khỏi prefs
+  await prefs.remove('token');
+  await prefs.remove('user');
+
+  // Xóa token FCM (huỷ đăng ký nhận notification)
+  await _fcm.deleteToken();
+
+  // Nếu bạn có đăng ký topic userId, huỷ đăng ký ở đây
+  // final userId = ... lấy userId từ prefs hoặc biến lưu trữ
+  // await _fcm.unsubscribeFromTopic('user_$userId');
+}
 }
 
 

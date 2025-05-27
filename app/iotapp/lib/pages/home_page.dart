@@ -150,167 +150,150 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(builder: (_) => const AddDevicePage()),
     );
+     if (added == true) {
+    // Nếu trang AddDevicePage trả về true khi thêm thành công
+    await loadDevices();
+  }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(tr('home')),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            color: Colors.red,
-            onPressed: _logout,
-          ),
-        ],
-      ),
-      drawer: HomeDrawer(
-        username: _username,
-        email: _email,
-        authService: _authService,
-        logoutCallback: _logout,
-      ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                onRefresh: _initializeUserDataAndDevices,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Consumer<DeviceListProvider>(
-                    builder: (context, deviceProvider, _) {
-                      final devices = deviceProvider.devices;
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(tr('home')),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.logout),
+          color: Colors.red,
+          onPressed: _logout,
+        ),
+      ],
+    ),
+    drawer: HomeDrawer(
+      username: _username,
+      email: _email,
+      authService: _authService,
+      logoutCallback: _logout,
+    ),
+    body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _initializeUserDataAndDevices,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Consumer<DeviceListProvider>(
+                builder: (context, deviceProvider, _) {
+                  final devices = deviceProvider.devices;
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 10),
-                          Expanded(
-                            child:
-                                devices.isEmpty
-                                    ? Center(child: Text(tr("no_devices")))
-                                    : ListView.builder(
-                                      itemCount: devices.length,
-                                      itemBuilder: (context, index) {
-                                        final device = devices[index];
-                                        final sensorData =
-                                            _sensorDataMap[device.deviceId] ??
-                                            [];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: devices.isEmpty
+                            ? Center(child: Text(tr("no_devices")))
+                            : ListView.builder(
+                                itemCount: devices.length,
+                                itemBuilder: (context, index) {
+                                  final device = devices[index];
+                                  final sensorData =
+                                      _sensorDataMap[device.deviceId] ?? [];
 
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Card(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              elevation: 4,
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 8,
-                                                  ),
-                                              child: InkWell(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                onTap:
-                                                    () => _onDeviceTap(device),
-                                                child: ListTile(
-                                                  contentPadding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 8,
-                                                      ),
-                                                  leading: Icon(
-                                                    Icons.devices,
-                                                    color:
-                                                        Theme.of(
-                                                          context,
-                                                        ).colorScheme.primary,
-                                                  ),
-                                                  title: Text(
-                                                    "${tr("device")}: ${device.deviceName}",
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                  trailing: IconButton(
-                                                    icon: Icon(
-                                                      Icons.edit,
-                                                      color:
-                                                          Theme.of(
-                                                            context,
-                                                          ).colorScheme.primary,
-                                                    ),
-                                                    onPressed: () {
-                                                      // Gọi hàm edit device ở đây
-                                                      editDevice(
-                                                        context,
-                                                        device,
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Card(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        elevation: 4,
+                                        margin: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                        ),
+                                        child: InkWell(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          onTap: () => _onDeviceTap(device),
+                                          child: ListTile(
+                                            contentPadding:
+                                                const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                            leading: Icon(
+                                              Icons.devices,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                            title: Text(
+                                              "${tr("device")}: ${device.deviceName}",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
                                               ),
                                             ),
-
-                                            SizedBox(height: 20),
-                                            Text(
-                                              tr("staticscal"),
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
+                                            trailing: IconButton(
+                                              icon: Icon(
+                                                Icons.edit,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
                                               ),
+                                              onPressed: () {
+                                                editDevice(context, device);
+                                              },
                                             ),
-                                            SizedBox(height: 20),
-
-                                            if (sensorData.isNotEmpty)
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                  bottom: 16.0,
-                                                ),
-                                                child:
-                                                    DailyTemperatureHumidityChart(
-                                                      data: sensorData,
-                                                    ),
-                                              ),
-                                          ],
-                                        );
-                                      },
-                                    ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Text(
+                                        tr("staticscal"),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      if (sensorData.isNotEmpty)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 16),
+                                          child:
+                                              DailyTemperatureHumidityChart(
+                                            data: sensorData,
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_dailyData.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          '${tr("device")} ${_selectedDevice?.deviceName ?? ""}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
                           ),
-
-                          const SizedBox(height: 16),
-                          if (devices.isEmpty)
-                            Center(
-                              child: ElevatedButton.icon(
-                                onPressed: _onAddDevice,
-                                icon: const Icon(Icons.add),
-                                label: Text(tr("add_device")),
-                              ),
-                            ),
-                          const SizedBox(height: 16),
-
-                          if (_dailyData.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            Text(
-                              '${tr("device")} ${_selectedDevice?.deviceName ?? ""}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                  ),
-                ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
-    );
-  }
+            ),
+          ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: _onAddDevice,
+      tooltip: tr('add_device'),
+      child: const Icon(Icons.add),
+    ),
+  );
+}
 }
