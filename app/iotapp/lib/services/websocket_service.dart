@@ -39,7 +39,7 @@ class WebSocketProvider with ChangeNotifier {
       if (data['type'] == "auth_success") {
         _isConnected = true;
         _isAuthorized = true;
-        _requestRelayStatus();
+       // _requestRelayStatus();
         notifyListeners();
       } else if (data['type'] == "auth_error") {
         _channel!.sink.close();
@@ -55,25 +55,25 @@ class WebSocketProvider with ChangeNotifier {
     });
   }
 
-  void _requestRelayStatus() {
-    _channel?.sink.add(jsonEncode({
-      "action": "getRelayStatus",
-      "deviceId": _deviceId,
-    }));
-  }
+  // void _requestRelayStatus() {
+  //   _channel?.sink.add(jsonEncode({
+  //     "action": "getRelayStatus",
+  //     "deviceId": _deviceId,
+  //   }));
+  // }
 
-  void toggleRelay(bool newState) {
-    if (!_isConnected || !_isAuthorized || _deviceId == null) return;
+  // void toggleRelay(bool newState) {
+  //   if (!_isConnected || !_isAuthorized || _deviceId == null) return;
 
-    _relayState = newState;
-    notifyListeners();
+  //   _relayState = newState;
+  //   notifyListeners();
 
-    _channel?.sink.add(jsonEncode({
-      "action": "toggleRelay",
-      "deviceId": _deviceId,
-      "state": newState ? "on" : "off"
-    }));
-  }
+    // _channel?.sink.add(jsonEncode({
+    //   "action": "toggleRelay",
+    //   "deviceId": _deviceId,
+    //   "state": newState ? "on" : "off"
+    // }));
+ // }
 
   void disconnect() {
     _channel?.sink.close();

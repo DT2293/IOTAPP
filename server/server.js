@@ -1,3 +1,34 @@
+// const express = require("express");
+// const http = require("http");
+// const WebSocket = require("ws");
+// const cors = require("cors");
+// const mongoose = require("mongoose");
+// const jwt = require("jsonwebtoken");
+// const axios = require("axios");
+// require("dotenv").config();
+// console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
+// // Khởi tạo Express app
+// const app = express();
+// app.use(express.json());
+// app.use(cors());
+
+// // Kết nối MongoDB
+// mongoose.connect(process.env.MONGO_URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+// }).then(() => console.log("✅ Kết nối MongoDB thành công!"))
+//     .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
+
+// // Import models
+// const User = require("./models/user");
+
+// // 🔹 Routes API
+// app.use("/api/auth", require("./routes/authRoutes"));
+// app.use("/api/devices", require("./routes/deviceRoutes"));
+// app.use("/api/fcm-token", require("./routes/fcmRoutes"));
+// app.use("/api/data", require("./routes/dataRoutes"));
+
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
@@ -18,7 +49,7 @@ mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log("✅ Kết nối MongoDB thành công!"))
-    .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
+  .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
 
 // Import models
 const User = require("./models/user");
@@ -27,6 +58,8 @@ const User = require("./models/user");
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/devices", require("./routes/deviceRoutes"));
 app.use("/api/fcm-token", require("./routes/fcmRoutes"));
+app.use("/api/data", require("./routes/dataRoutes")); // Thêm route cho dữ liệu
+
 
 app.get("/", (req, res) => {
     res.send("🚀 Server IoT Báo Cháy đã sẵn sàng!");
@@ -152,31 +185,28 @@ wss.on("connection", async (ws) => {
 
 const { handleAlert } = require("./fcm_services/handleAleart2");
 const sendData = async () => {
-
+  console.log("🕒 sendData được gọi");
   const users = await User.find().select("userId devices");
 
   for (const user of users) {
     for (const deviceId of user.devices) {
       const newData = latestSensorDataMap.get(deviceId);
+      console.log("📍 newData lấy ra:", newData);
       if (!newData) continue;
 
       const oldData = previousData.get(deviceId);
+      console.log("📍 oldData:", oldData);
+      console.log("📍 newData:", newData);
+
       if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
+        console.log(`📊 Dữ liệu mới khác dữ liệu cũ: smokeLevel=${newData.smokeLevel}, flame=${newData.flame}`);
+
         if (newData.smokeLevel >= 300 || newData.flame) {
           console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
           await handleAlert(deviceId, newData);
         }
 
         previousData.set(deviceId, newData);
-      }
-
-      const userClients = clients.get(user.userId);
-      if (userClients) {
-        for (const client of userClients) {
-          if (client.readyState === client.OPEN) {
-            client.send(JSON.stringify({ type: "sensordatas", data: newData }));
-          }
-        }
       }
     }
   }
