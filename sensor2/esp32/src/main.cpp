@@ -10,23 +10,20 @@
 #include "led_buzzer/led_buzzer_control.h"
 #include <WiFi.h>
 #include <WiFiManager.h>
-#include "dht22/dht22.h"
 #include "mq2/mq_sensor.h"
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 unsigned long lastPrintTime = 0;
 
 String deviceId;
 
-void sendDataToServer(float temp, float humi, int gas, bool flameDetected) {
+void sendDataToServer(int gas, bool flameDetected) {
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
-    http.begin("http://192.168.1.7:3000/api/sensordata"); // Thay bằng IP server của bạn
+    http.begin("http://dungtc.iothings.vn/api/sensordata"); // Thay bằng IP server của bạn
     http.addHeader("Content-Type", "application/json");
 
     StaticJsonDocument<256> doc;
     doc["deviceId"] = deviceId;
-    doc["temperature"] = temp;
-    doc["humidity"] = humi;
     doc["smokeLevel"] = gas;
     doc["flame"] = flameDetected ? 1 : 0;
 
@@ -51,7 +48,6 @@ void setup()
   Serial.begin(115200);
   Wire.begin(19, 21); // OLED
 
-  initRTC();
   initDisplay();
   initFlameSensor();
   initLedBuzzer();
@@ -87,7 +83,7 @@ void setup()
   showQRCode(jsonPayload);
 
   unsigned long qrStartTime = millis();
-  while (millis() - qrStartTime < 6000)
+  while (millis() - qrStartTime < 600)
   {
     delay(10);
   }
@@ -102,32 +98,21 @@ unsigned long alertInterval = 500;
 void loop() {
   unsigned long currentMillis = millis();
 
-  // Đọc cảm biến và gửi dữ liệu mỗi 2 giây
   if (currentMillis - lastSensorRead >= sensorInterval) {
     lastSensorRead = currentMillis;
 
     int analogFlameVal, digitalFlameVal;
     bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
 
-    float temp, humi;
-    bool dhtOk = readDhtSensor(temp, humi);
-
     int analogGasVal, digitalGasVal;
     readMQSensor(analogGasVal, digitalGasVal);
-    bool gasLeaked = (analogGasVal > 800 || digitalGasVal == LOW);
 
-    if (dhtOk) {
-      sendDataToServer(temp, humi, analogGasVal, flameDetected);
-      Serial.printf("🌡 %.2f°C | 💧 %.2f%% | 💨 %d | 🔥 %s\n",
-                    temp, humi, analogGasVal, flameDetected ? "Có lửa" : "Không");
-    } else {
-      Serial.println("❌ Không đọc được cảm biến DHT22");
-    }
+    sendDataToServer(analogGasVal, flameDetected);
+    Serial.printf("💨 %d | 🔥 %s\n", analogGasVal, flameDetected ? "Có lửa" : "Không");
 
     updateDisplay(flameDetected);
   }
 
-  // Kiểm tra cảnh báo mỗi 500ms
   if (currentMillis - lastAlertCheck >= alertInterval) {
     lastAlertCheck = currentMillis;
 
@@ -146,6 +131,7 @@ void loop() {
     }
   }
 }
+
 // #define BLYNK_TEMPLATE_ID "TMPL6lIbB6__g"
 // #define BLYNK_TEMPLATE_NAME "sensor"
 // #define BLYNK_AUTH_TOKEN "NoyfeonUVqzMsSW6yGK2fIyEbOsI9FTf"

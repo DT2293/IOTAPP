@@ -30,16 +30,14 @@ void updateDisplay(bool isFlame) {
   if (currentMillis - lastDisplayUpdate >= DISPLAY_INTERVAL) {
     lastDisplayUpdate = currentMillis;
 
-    DateTime now = getCurrentTime();
-
     display.clearDisplay();
     display.setCursor(0, 0);
     display.print("Time: ");
-    display.printf("%02d:%02d:%02d", now.hour(), now.minute(), now.second());
+  //  display.printf("%02d:%02d:%02d", now.hour(), now.minute(), now.second());
 
     display.setCursor(0, 10);
-    display.print("Date: ");
-    display.printf("%02d/%02d/%04d", now.day(), now.month(), now.year());
+  //  display.print("Date: ");
+ //   display.printf("%02d/%02d/%04d", now.day(), now.month(), now.year());
 
     if (isFlame) {
       display.setCursor(0, 25);
