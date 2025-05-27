@@ -183,7 +183,42 @@ wss.on("connection", async (ws) => {
     });
 });
 
+// const { handleAlert } = require("./fcm_services/handleAleart2");
+// const sendData = async () => {
+//     console.log("🕒 sendData được gọi");
+//     const users = await User.find().select("userId devices");
+
+//     for (const user of users) {
+//         for (const deviceId of user.devices) {
+//             const newData = latestSensorDataMap.get(deviceId);
+//             console.log("📍 newData lấy ra:", newData);
+//             if (!newData) continue;
+
+//             const oldData = previousData.get(deviceId);
+//             console.log("📍 oldData:", oldData);
+//             console.log("📍 newData:", newData);
+
+//             if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
+//                 console.log(`📊 Dữ liệu mới khác dữ liệu cũ: smokeLevel=${newData.smokeLevel}, flame=${newData.flame}`);
+
+//                 // if (newData.smokeLevel >= 300 || newData.flame) {
+//                 //   console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
+//                 //   await handleAlert(deviceId, newData);
+//                 // }
+//                 if ((newData.smokeLevel >= 300 || newData.flame) && (!oldData || newData.smokeLevel !== oldData.smokeLevel || newData.flame !== oldData.flame)) {
+//                     console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
+//                     await handleAlert(deviceId, newData);
+//                 }
+
+//                 previousData.set(deviceId, newData);
+//             }
+//         }
+//     }
+// };
+
+
 const { handleAlert } = require("./fcm_services/handleAleart2");
+
 const sendData = async () => {
     console.log("🕒 sendData được gọi");
     const users = await User.find().select("userId devices");
@@ -194,24 +229,14 @@ const sendData = async () => {
             console.log("📍 newData lấy ra:", newData);
             if (!newData) continue;
 
-            const oldData = previousData.get(deviceId);
-            console.log("📍 oldData:", oldData);
-            console.log("📍 newData:", newData);
-
-            if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
-                console.log(`📊 Dữ liệu mới khác dữ liệu cũ: smokeLevel=${newData.smokeLevel}, flame=${newData.flame}`);
-
-                // if (newData.smokeLevel >= 300 || newData.flame) {
-                //   console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
-                //   await handleAlert(deviceId, newData);
-                // }
-                if ((newData.smokeLevel >= 300 || newData.flame) && (!oldData || newData.smokeLevel !== oldData.smokeLevel || newData.flame !== oldData.flame)) {
-                    console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
-                    await handleAlert(deviceId, newData);
-                }
-
-                previousData.set(deviceId, newData);
+            // 🚨 Luôn kiểm tra nếu đang trong trạng thái nguy hiểm
+            if (newData.smokeLevel >= 300 || newData.flame === true) {
+                console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
+                await handleAlert(deviceId, newData);
             }
+
+            // Cập nhật dữ liệu cũ nếu muốn dùng cho mục đích khác
+            previousData.set(deviceId, newData);
         }
     }
 };
