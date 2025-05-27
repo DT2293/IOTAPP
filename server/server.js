@@ -150,6 +150,7 @@ wss.on("connection", async (ws) => {
   });
 });
 
+const { handleAlert } = require("./fcm_services/handleAleart2");
 const sendData = async () => {
 
   const users = await User.find().select("userId devices");
