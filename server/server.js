@@ -220,13 +220,13 @@ wss.on("connection", async (ws) => {
 const { handleAlert } = require("./fcm_services/handleAleart2");
 
 const sendData = async () => {
-    console.log("🕒 sendData được gọi");
+   // console.log("🕒 sendData được gọi");
     const users = await User.find().select("userId devices");
 
     for (const user of users) {
         for (const deviceId of user.devices) {
             const newData = latestSensorDataMap.get(deviceId);
-            console.log("📍 newData lấy ra:", newData);
+     //       console.log("📍 newData lấy ra:", newData);
             if (!newData) continue;
 
             // 🚨 Luôn kiểm tra nếu đang trong trạng thái nguy hiểm
@@ -242,7 +242,7 @@ const sendData = async () => {
 };
 
 // Chạy liên tục để gửi cảnh báo (tuỳ chỉnh tần suất)
-setInterval(sendData, 2000);
+setInterval(sendData, 5000);
 // 🚀 Khởi động HTTP + WebSocket Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
