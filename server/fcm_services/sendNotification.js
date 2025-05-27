@@ -4,7 +4,7 @@
 const admin = require("firebase-admin");
 
 if (!admin.apps.length) {
-  const serviceAccount = require("../fcm_services/firebase-service-account.json");
+  const serviceAccount = require("../fcm_services/messapp-9d1bc-firebase-adminsdk-fbsvc-c97671c5fb.json");
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
