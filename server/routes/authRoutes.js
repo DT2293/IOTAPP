@@ -225,19 +225,41 @@ router.get("/profile", authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng" });
     }
 });
-router.patch("/add-phone", authMiddleware, async (req, res) => {
-    const { userId, newPhone } = req.body;
-    try {
-      const user = await User.findOne({ userId });
-      if (!user) return res.status(404).send("User not found");
-  
-      user.phonenumber.push(newPhone);
-      await user.save();
-      res.send({ message: "Phone number added", phonenumber: user.phonenumber });
-    } catch (err) {
-      res.status(500).send("Error updating phone number");
+router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
+  const { userId } = req.params;
+  const { newPhone } = req.body;
+
+  // Kiểm tra dữ liệu đầu vào
+  if (!newPhone || typeof newPhone !== 'string' || newPhone.trim() === '') {
+    return res.status(400).json({ message: "Phone number is required" });
+  }
+
+  try {
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  });
+
+    // Đảm bảo trường `phonenumber` tồn tại là array
+    if (!Array.isArray(user.phonenumber)) {
+      user.phonenumber = [];
+    }
+
+    // Thêm số điện thoại
+    user.phonenumber.push(newPhone);
+    await user.save();
+
+    res.json({
+      message: "Phone number added",
+      phonenumber: user.phonenumber
+    });
+
+  } catch (err) {
+    console.error("🚨 Error updating phone number:", err);
+    res.status(500).json({ message: "Error updating phone number", error: err.message });
+  }
+});
+
   
 
 

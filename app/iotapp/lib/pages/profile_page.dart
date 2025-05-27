@@ -38,8 +38,10 @@ class _ProfilePageState extends State<ProfilePage> {
     phoneNumbers = List.from(widget.phone);
   }
 
-void _addPhoneNumber() async {
+ void _addPhoneNumber() async {
   String phone = _phoneController.text.trim();
+  print("DEBUG: Phone entered = '$phone'"); // 👈 thêm dòng này
+
   if (phone.isEmpty) {
     Fluttertoast.showToast(msg: tr("phone_required"));
     return;
@@ -57,15 +59,13 @@ void _addPhoneNumber() async {
   }
 }
 
-
   void _updateProfile() async {
     String newUsername = _usernameController.text.trim();
     String newEmail = _emailController.text.trim();
     String newPhone = _phoneController.text.trim();
     if (newUsername.isEmpty || newEmail.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("empty_username_email".tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("empty_username_email".tr())));
       return;
     }
 
@@ -73,9 +73,8 @@ void _addPhoneNumber() async {
     String? token = await _authService.getToken();
 
     if (userId == null || token == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("no_userid_token".tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("no_userid_token".tr())));
       return;
     }
 
@@ -87,9 +86,8 @@ void _addPhoneNumber() async {
     );
 
     if (success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("update_success".tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("update_success".tr())));
 
       await Future.delayed(Duration(milliseconds: 500));
       Navigator.pushReplacement(
@@ -97,9 +95,8 @@ void _addPhoneNumber() async {
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("update_failed".tr())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("update_failed".tr())));
     }
   }
 
@@ -120,76 +117,97 @@ void _addPhoneNumber() async {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
-            Text(
-              "username".tr(),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                hintText: "enter_username".tr(),
-                border: OutlineInputBorder(),
-              ),
-            ),
+            buildLabel("username"),
+            buildTextField(_usernameController, "enter_username", Icons.person),
             SizedBox(height: 16),
-            Text(
-              "email".tr(),
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                hintText: "enter_email".tr(),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Modified phone input
-            TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: tr('enter_phone'),
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
+            buildLabel("email"),
+            buildTextField(_emailController, "enter_email", Icons.email),
+            SizedBox(height: 16),
+            buildLabel("phone"),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      hintText: tr("enter_phone"),
+                      prefixIcon: Icon(Icons.phone),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _addPhoneNumber,
                   icon: Icon(Icons.add),
-                  onPressed: () {
-                    final newPhone = _phoneController.text.trim();
-                    if (newPhone.isNotEmpty) {
-                      _addPhoneNumber();
-                    }
-                  },
+                  label: Text(tr("add")),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                ),
+              ],
+            ),
+            if (phoneNumbers.isNotEmpty) ...[
+              SizedBox(height: 24),
+              buildLabel("phone"),
+              Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: phoneNumbers.map((phone) {
+                      return ListTile(
+                        leading: Icon(Icons.phone_android),
+                        title: Text(phone),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
-              keyboardType: TextInputType.phone,
-            ),
-            SizedBox(height: 24),
-
-            // List of phone numbers
-            if (phoneNumbers.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: phoneNumbers.map((phone) {
-                  return ListTile(
-                    title: Text(phone),
-                  );
-                }).toList(),
-              ),
-
-            SizedBox(height: 24),
+            ],
+            SizedBox(height: 32),
             Center(
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: _updateProfile,
-                child: Text("update_info".tr()),
+                icon: Icon(Icons.save),
+                label: Text("update_info".tr()),
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildLabel(String key) {
+    return Text(
+      tr(key),
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget buildTextField(
+      TextEditingController controller, String hintKey, IconData icon) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: tr(hintKey),
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     );

@@ -88,7 +88,26 @@
   "register_success":"Đăng ký thành công",
   "device": "Thiết bị",
   "add_device": "Thêm thiết bị",
-  "no_devices": "Không có thiết bị nào"
+  "no_devices": "Không có thiết bị nào",
+  "edit_device": "Chỉnh sửa thiết bị",
+  "save": "Lưu",
+  "cancel": "Hủy",
+  "device_name": "Tên thiết bị",
+  "enter_device_name": "Nhập tên thiết bị",
+  "device_details": "Chi tiết thiết bị",
+  "edit": "Chỉnh sửa",
+  "tap_to_edit": "Nhấn để chỉnh sửa",
+  "confirm": "Xác nhận",
+  "loading": "Đang tải...",
+  "error_loading_data": "Lỗi tải dữ liệu",
+  "back": "Quay lại",
+  "device_updated_success": "Cập nhật thiết bị thành công",
+  "device_update_failed": "Cập nhật thiết bị thất bại",
+  "delete_device": "Xóa thiết bị",
+  "delete_confirm": "Bạn có chắc chắn muốn xóa thiết bị này?",
+  "yes": "Có",
+  "no": "Không",
+ "staticscal": "Biểu đồ thống kê",
 
-
+  "device_status": "Trạng thái thiết bị"
 }
