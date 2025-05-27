@@ -156,40 +156,39 @@ wss.on("connection", async (ws) => {
     });
 });
 
- //const { handleAlert } = require("./fcm_services/handleAlert");
+const { handleAlert } = require("./fcm_services/handleAleart2");
 
 // Gửi dữ liệu định kỳ mỗi 2 giây
-// const sendData = async () => {
-//     const users = await User.find().select("userId devices");
+const sendData = async () => {
+    const users = await User.find().select("userId devices");
   
-//     for (const user of users) {
-//       for (const deviceId of user.devices) {
-//         const newData = await fetchData(deviceId);
-//         if (!newData) continue;
+    for (const user of users) {
+      for (const deviceId of user.devices) {
+        const newData = await fetchData(deviceId);
+        if (!newData) continue;
   
-//         if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
+        if (JSON.stringify(newData) !== JSON.stringify(previousData.get(deviceId))) {
   
-//           // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
-//           if (newData.temperature > 70) {
-//             await handleAlert(deviceId, newData);
-//           }
+          // 🔥 Gửi cảnh báo nếu nhiệt độ vượt ngưỡng
+          if (newData.smokeLevel >= 300 || newData.flame) {
+            await handleAlert(deviceId, newData);
+          }
   
-//           previousData.set(deviceId, newData);
+          previousData.set(deviceId, newData);
   
-//           // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
-//           const userClients = clients.get(user.userId);
-//           if (userClients) {
-//             for (const client of userClients) {
-//               client.send(JSON.stringify({ type: "sensordatas", data: newData }));
-//             }
-//           }
-//         }
-//       }
-//     }
-//   };
+          // 🔁 Nếu user đang kết nối WebSocket, gửi thêm dữ liệu real-time
+          const userClients = clients.get(user.userId);
+          if (userClients) {
+            for (const client of userClients) {
+              client.send(JSON.stringify({ type: "sensordatas", data: newData }));
+            }
+          }
+        }
+      }
+    }
+  };
   
-// Chạy sendData mỗi 2 giây
-//setInterval(sendData, 2000);
+setInterval(sendData, 2000);
 // 🚀 Khởi động HTTP + WebSocket Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

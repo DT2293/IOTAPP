@@ -25,7 +25,8 @@ void sendDataToServer(int gas, bool flameDetected) {
     StaticJsonDocument<256> doc;
     doc["deviceId"] = deviceId;
     doc["smokeLevel"] = gas;
-    doc["flame"] = flameDetected ? 1 : 0;
+  //  doc["flame"] = flameDetected ? 1 : 0;
+doc["flame"] = flameDetected; // gửi đúng kiểu boolean
 
     String requestBody;
     serializeJson(doc, requestBody);
