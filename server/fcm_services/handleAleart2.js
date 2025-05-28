@@ -15,7 +15,7 @@ async function handleAlert(deviceId, sensorData) {
       const body = `🔥 Thiết bị ${deviceId} phát hiện cháy!\nKhói: ${sensorData.smokeLevel}`;
       // Lặp qua tất cả các FCM token của user và gửi thông báo
       for (const fcmToken of fcmTokens) {
-        console.log(`📬 Gửi thông báo đến FCM Token: ${fcmToken}`);
+     //   console.log(`📬 Gửi thông báo đến FCM Token: ${fcmToken}`);
         
         await sendNotificationToDevice(fcmToken, title, body, { deviceId, type: "fire_alert" });
       }

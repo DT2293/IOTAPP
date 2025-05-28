@@ -1,34 +1,3 @@
-// const express = require("express");
-// const http = require("http");
-// const WebSocket = require("ws");
-// const cors = require("cors");
-// const mongoose = require("mongoose");
-// const jwt = require("jsonwebtoken");
-// const axios = require("axios");
-// require("dotenv").config();
-// console.log("JWT_SECRET:", process.env.JWT_SECRET);
-
-// // Khởi tạo Express app
-// const app = express();
-// app.use(express.json());
-// app.use(cors());
-
-// // Kết nối MongoDB
-// mongoose.connect(process.env.MONGO_URI, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-// }).then(() => console.log("✅ Kết nối MongoDB thành công!"))
-//     .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
-
-// // Import models
-// const User = require("./models/user");
-
-// // 🔹 Routes API
-// app.use("/api/auth", require("./routes/authRoutes"));
-// app.use("/api/devices", require("./routes/deviceRoutes"));
-// app.use("/api/fcm-token", require("./routes/fcmRoutes"));
-// app.use("/api/data", require("./routes/dataRoutes"));
-
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
@@ -88,14 +57,19 @@ const deviceClients = new Map(); // key: deviceId, value: ws
   }
 }
 function sendAlarmCommandToDevice(deviceId, command) {
+  console.log(`👉 Gửi lệnh đến thiết bị: ${deviceId}, command: ${command}`);
   const wsDevice = deviceClients.get(deviceId);
+  console.log("🔍 wsDevice:", wsDevice ? "ĐÃ TÌM THẤY" : "KHÔNG TÌM THẤY");
+
   if (wsDevice && wsDevice.readyState === WebSocket.OPEN) {
     const msg = JSON.stringify({ type: "alarm_command", command, deviceId });
     wsDevice.send(msg);
+    console.log("✅ Đã gửi lệnh đến thiết bị");
   } else {
-    console.warn(`Không tìm thấy kết nối thiết bị ${deviceId}`);
+    console.warn(`⚠️ Không tìm thấy kết nối thiết bị ${deviceId}`);
   }
 }
+
 // app.post("/api/alarm/:userId/:command", (req, res) => {
 //   const userId = Number(req.params.userId);
 //   const command = req.params.command;
@@ -277,22 +251,6 @@ console.log("📥 Server nhận message từ client:", message.toString());
     });
 });
 
-
-    // ws.on("close", () => {
-    //     console.log(`⚡ User ${ws.userId || "chưa xác thực"} ngắt kết nối`);
-    //     if (ws.userId && clients.has(ws.userId)) {
-    //         clients.get(ws.userId).delete(ws);
-    //         if (clients.get(ws.userId).size === 0) {
-    //             clients.delete(ws.userId);
-    //         }
-    //     }   
-    // });
-
-   
-
-   
-//});
-
 app.post('/api/alarm/:userId/:command', (req, res) => {
   const userId = Number(req.params.userId);
   const command = req.params.command; // "alarm_on" hoặc "alarm_off"
@@ -321,7 +279,7 @@ const sendData = async () => {
 
             // 🚨 Luôn kiểm tra nếu đang trong trạng thái nguy hiểm
             if (newData.smokeLevel >= 300 || newData.flame === true) {
-                console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
+         //       console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
                 await handleAlert(deviceId, newData);
             }
 
