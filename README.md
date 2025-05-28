@@ -3,8 +3,6 @@ Fire Alarm IoT App: A mobile IoT application built with Flutter to monitor fire 
 Features
   - Real-time display of temperature, humidity, and smoke level via WebSocket
 
-  - Remote control of devices through Blynk's HTTP API
-
   - Fire alert notifications via Firebase Cloud Messaging (FCM) even when the app is closed
 
   - User authentication using JWT, each user manages multiple devices (deviceId)
