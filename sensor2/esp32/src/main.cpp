@@ -54,7 +54,7 @@ void sendDataToServer(int gas, bool flameDetected)
     Serial.println("❌ Không có WiFi!");
   }
 }
-
+void onMessageCallback(WebsocketsMessage message);
 void setup()
 {
   wsClient.onMessage(onMessageCallback);

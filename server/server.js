@@ -87,7 +87,7 @@ const latestSensorDataMap = new Map();
   }
 }
 
-app.post("/api/alarm/:userId/:command", (req, res) => {
+app.post("/api/alarm/:userId/:command", authMiddleware, (req, res) => {
   const userId = Number(req.params.userId);
   const command = req.params.command;
 
@@ -230,6 +230,7 @@ app.post('/api/alarm/:userId/:command', (req, res) => {
 
 
 const { handleAlert } = require("./fcm_services/handleAleart2");
+const authMiddleware = require("./utils/authMiddleware");
 
 const sendData = async () => {
    // console.log("🕒 sendData được gọi");

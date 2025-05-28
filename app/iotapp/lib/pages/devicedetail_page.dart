@@ -47,17 +47,17 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildSensorCard(
-                      tr("temperature"),
-                      "${wsProvider.deviceData['temperature']}°C",
-                      Colors.orange,
-                    ),
-                    SizedBox(height: 16),
-                    _buildSensorCard(
-                      tr("humidity"),
-                      "${wsProvider.deviceData['humidity']}%",
-                      Colors.blue,
-                    ),
+                    // _buildSensorCard(
+                    //   tr("temperature"),
+                    //   "${wsProvider.deviceData['temperature']}°C",
+                    //   Colors.orange,
+                    // ),
+                    // SizedBox(height: 16),
+                    // _buildSensorCard(
+                    //   tr("humidity"),
+                    //   "${wsProvider.deviceData['humidity']}%",
+                    //   Colors.blue,
+                    // ),
                     SizedBox(height: 16),
                     _buildSensorCard(
                       tr("smoke_level"),
