@@ -203,7 +203,8 @@ void sendDataToServer(int gas, bool flameDetected)
     Serial.println("❌ Không có WiFi!");
   }
 }
-void sendDeviceAuthenticate() {
+void sendDeviceAuthenticate()
+{
   StaticJsonDocument<128> doc;
   doc["type"] = "device_authenticate";
   doc["deviceId"] = deviceId;
@@ -216,8 +217,14 @@ void sendDeviceAuthenticate() {
 }
 
 void onMessageCallback(WebsocketsMessage message);
-void setup()
-{
+void onWsEvent(WebsocketsEvent event, String data) {
+  if (event == WebsocketsEvent::ConnectionOpened) {
+    Serial.println("✅ WebSocket đã kết nối, gửi xác thực...");
+    sendDeviceAuthenticate();
+  }
+}
+
+void setup() {
   Serial.begin(115200);
   Wire.begin(19, 21); // OLED
 
@@ -228,17 +235,13 @@ void setup()
   Serial.println("Khởi động WiFiManager...");
 
   WiFiManager wifiManager;
-  if (!wifiManager.autoConnect("ESP32-Config-AP"))
-  {
+  if (!wifiManager.autoConnect("ESP32-Config-AP")) {
     Serial.println("Không kết nối được WiFi và cấu hình WiFi thất bại!");
-  }
-  else
-  {
+  } else {
     Serial.println("WiFi đã kết nối!");
     Serial.print("Địa chỉ IP hiện tại: ");
     Serial.println(WiFi.localIP());
 
-    // Gán MAC address trước khi dùng nó
     deviceId = WiFi.macAddress();
 
     display.clearDisplay();
@@ -249,34 +252,26 @@ void setup()
     display.print("IP: ");
     display.println(WiFi.localIP());
 
-    wsClient.onMessage(onMessageCallback);
-    wsClient.onEvent([](WebsocketsEvent event, String data){
-  if (event == WebsocketsEvent::ConnectionOpened) {
-    Serial.println("✅ WebSocket đã kết nối, gửi xác thực...");
-    sendDeviceAuthenticate();
-  }
-});
-    wsClient.connect("ws://dungtc.iothings.vn:3000");
+    wsClient.onEvent(onWsEvent);        // Đăng ký event callback
+    wsClient.onMessage(onMessageCallback); // Đăng ký message callback
 
-    sendDeviceAuthenticate(); // Bây giờ deviceId đã có giá trị
+    wsClient.connect("ws://dungtc.iothings.vn:3000");
 
     display.display();
   }
 
   WiFi.mode(WIFI_STA);
 
-  // Không cần gọi lại deviceId ở đây nữa vì đã gán rồi ở trên
-
   String jsonPayload = "{\"deviceId\":\"" + deviceId + "\"}";
   showQRCode(jsonPayload);
 
   unsigned long qrStartTime = millis();
-  while (millis() - qrStartTime < 600)
-  {
+  while (millis() - qrStartTime < 600) {
     delay(10);
   }
   Serial.println("Setup hoàn thành.");
 }
+
 
 unsigned long lastSensorRead = 0;
 unsigned long sensorInterval = 2000;
@@ -284,25 +279,31 @@ unsigned long sensorInterval = 2000;
 unsigned long lastAlertCheck = 0;
 unsigned long alertInterval = 500;
 bool alarmEnabled = true;
-void onMessageCallback(WebsocketsMessage message) {
+void onMessageCallback(WebsocketsMessage message)
+{
   Serial.print("Nhận tin nhắn từ server: ");
   Serial.println(message.data());
 
   StaticJsonDocument<200> doc;
   DeserializationError err = deserializeJson(doc, message.data());
-  if (err) {
+  if (err)
+  {
     Serial.println("Lỗi parse JSON");
     return;
   }
 
-  const char* typeMsg = doc["type"];
-  if (strcmp(typeMsg, "alarm_command") == 0) {
-    const char* command = doc["command"];
-    if (strcmp(command, "alarm_off") == 0) {
+  const char *typeMsg = doc["type"];
+  if (strcmp(typeMsg, "alarm_command") == 0)
+  {
+    const char *command = doc["command"];
+    if (strcmp(command, "alarm_off") == 0)
+    {
       alarmEnabled = false;
       stopAlert();
       Serial.println("🔕 Còi báo bị tắt từ xa");
-    } else if (strcmp(command, "alarm_on") == 0) {
+    }
+    else if (strcmp(command, "alarm_on") == 0)
+    {
       alarmEnabled = true;
       startAlert();
       Serial.println("🔔 Còi báo bật lại");
@@ -310,10 +311,9 @@ void onMessageCallback(WebsocketsMessage message) {
   }
 }
 
-
 void loop()
 {
-    wsClient.poll();
+
   unsigned long currentMillis = millis();
 
   if (currentMillis - lastSensorRead >= sensorInterval)
@@ -327,7 +327,7 @@ void loop()
     readMQSensor(analogGasVal, digitalGasVal);
 
     sendDataToServer(analogGasVal, flameDetected);
-    Serial.printf("💨 %d | 🔥 %s\n", analogGasVal, flameDetected ? "Có lửa" : "Không");
+    //   Serial.printf("💨 %d | 🔥 %s\n", analogGasVal, flameDetected ? "Có lửa" : "Không");
 
     updateDisplay(flameDetected);
   }
@@ -341,7 +341,7 @@ void loop()
     bool gasLeaked = (analogGasVal > 300 || digitalGasVal == HIGH);
     int analogFlameVal, digitalFlameVal;
     bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
-    Serial.printf("⚙️ Trạng thái còi: %s\n", alarmEnabled ? "BẬT" : "TẮT");
+    // Serial.printf("⚙️ Trạng thái còi: %s\n", alarmEnabled ? "BẬT" : "TẮT");
 
     if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1)
     {
@@ -349,18 +349,20 @@ void loop()
     }
     else if (flameDetected || gasLeaked)
     {
-      if (alarmEnabled) {
-         startAlert();
-       } else {
+      if (alarmEnabled)
+      {
+        startAlert();
+      }
+      else
+      {
         stopAlert(); // Tắt còi nhưng có thể vẫn báo đèn hoặc tín hiệu khác
-     }
-     // startAlert();
+      }
+      // startAlert();
     }
     else
     {
       stopAlert();
     }
   }
-
+  wsClient.poll();
 }
-

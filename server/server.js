@@ -144,6 +144,7 @@ wss.on("connection", async (ws) => {
     ws.isAuthenticated = false;
 
     ws.on("message", async (message) => {
+         console.log("📥 Server nhận message từ client:", message);
         try {
             const data = JSON.parse(message);
 
@@ -224,7 +225,7 @@ wss.on("connection", async (ws) => {
             if (clients.get(ws.userId).size === 0) {
                 clients.delete(ws.userId);
             }
-        }
+        }   
     });
 
     ws.on("error", (err) => {
