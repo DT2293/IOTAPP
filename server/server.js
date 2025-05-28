@@ -49,37 +49,37 @@ const deviceClients = new Map(); // key: deviceId, value: ws
 
 
 function sendAlarmCommandToDevice(deviceId, command) {
-  console.log(`👉 Gửi lệnh đến thiết bị: ${deviceId}, command: ${command}`);
-  const wsDevice = deviceClients.get(deviceId);
-  console.log("🔍 wsDevice:", wsDevice ? "ĐÃ TÌM THẤY" : "KHÔNG TÌM THẤY");
+    console.log(`👉 Gửi lệnh đến thiết bị: ${deviceId}, command: ${command}`);
+    const wsDevice = deviceClients.get(deviceId);
+    console.log("🔍 wsDevice:", wsDevice ? "ĐÃ TÌM THẤY" : "KHÔNG TÌM THẤY");
 
-  if (wsDevice && wsDevice.readyState === WebSocket.OPEN) {
-    const msg = JSON.stringify({ type: "alarm_command", command, deviceId });
-    wsDevice.send(msg);
-    console.log("✅ Đã gửi lệnh đến thiết bị");
-  } else {
-    console.warn(`⚠️ Không tìm thấy kết nối thiết bị ${deviceId}`);
-  }
+    if (wsDevice && wsDevice.readyState === WebSocket.OPEN) {
+        const msg = JSON.stringify({ type: "alarm_command", command, deviceId });
+        wsDevice.send(msg);
+        console.log("✅ Đã gửi lệnh đến thiết bị");
+    } else {
+        console.warn(`⚠️ Không tìm thấy kết nối thiết bị ${deviceId}`);
+    }
 }
 app.post("/api/alarm/:userId/:command", async (req, res) => {
-  const userId = Number(req.params.userId);
-  const command = req.params.command;
+    const userId = Number(req.params.userId);
+    const command = req.params.command;
 
-  if (!["alarm_on", "alarm_off"].includes(command)) {
-    return res.status(400).json({ error: "Lệnh không hợp lệ" });
-  }
+    if (!["alarm_on", "alarm_off"].includes(command)) {
+        return res.status(400).json({ error: "Lệnh không hợp lệ" });
+    }
 
-  // Lấy danh sách thiết bị user được phép điều khiển
-  const user = await User.findOne({ userId }).select("devices").lean();
-  if (!user) {
-    return res.status(404).json({ error: "User không tồn tại" });
-  }
+    // Lấy danh sách thiết bị user được phép điều khiển
+    const user = await User.findOne({ userId }).select("devices").lean();
+    if (!user) {
+        return res.status(404).json({ error: "User không tồn tại" });
+    }
 
-  for (const deviceId of user.devices) {
-    sendAlarmCommandToDevice(deviceId, command);
-  }
+    for (const deviceId of user.devices) {
+        sendAlarmCommandToDevice(deviceId, command);
+    }
 
-  res.json({ message: `Đã gửi lệnh ${command} đến tất cả thiết bị của user ${userId}` });
+    res.json({ message: `Đã gửi lệnh ${command} đến tất cả thiết bị của user ${userId}` });
 });
 
 
@@ -94,7 +94,7 @@ app.post("/api/sensordata", async (req, res) => {
         // console.log(`📥 Dữ liệu từ thiết bị ${deviceId}:`);
         // console.log(`💨 Mức khói: ${smokeLevel}`);
         // console.log(`🔥 Lửa: ${flame ? "Có" : "Không"}`);
-       // console.log("------------------------------------");
+        // console.log("------------------------------------");
 
         const sensorData = { deviceId, smokeLevel, flame, time: new Date() };
 
@@ -186,6 +186,31 @@ wss.on("connection", async (ws) => {
                 // Không xóa deviceClients ở đây nữa
                 return;
             }
+            if (data.type === "alarm_command") {
+                // Kiểm tra ws đã xác thực user chưa
+                if (!ws.isAuthenticated || !ws.userId) {
+                    ws.send(JSON.stringify({ type: "error", message: "Chưa xác thực user" }));
+                    return;
+                }
+
+                // Kiểm tra user có quyền với deviceId không
+                const userDevices = await User.findOne({ userId: ws.userId }).select("devices").lean();
+                if (!userDevices || !Array.isArray(userDevices.devices) || !data.deviceId || !userDevices.devices.includes(data.deviceId)) {
+                    ws.send(JSON.stringify({ type: "error", message: "Không có quyền truy cập device này" }));
+                    return;
+                }
+
+                // Gửi lệnh tới thiết bị qua deviceClients
+                sendAlarmCommandToDevice(data.deviceId, data.command);
+
+                // Trả phản hồi cho user
+                ws.send(JSON.stringify({
+                    type: "alarm_command_ack",
+                    message: `Lệnh ${data.command} đã được gửi tới thiết bị ${data.deviceId}`
+                }));
+
+                return;
+            }
 
             if (!ws.isAuthenticated) {
                 ws.send(JSON.stringify({ type: "auth_error", message: "Bạn chưa xác thực!" }));
@@ -225,40 +250,29 @@ wss.on("connection", async (ws) => {
     ws.on("error", (err) => {
         console.error(`❌ Lỗi WebSocket: ${err.message}`);
     });
-     ws.on("error", (err) => {
+    ws.on("error", (err) => {
         console.error(`❌ Lỗi WebSocket: ${err.message}`);
     });
 });
 
-app.post('/api/alarm/:userId/:command', (req, res) => {
-  const userId = Number(req.params.userId);
-  const command = req.params.command; // "alarm_on" hoặc "alarm_off"
-
-  if (!["alarm_on", "alarm_off"].includes(command)) {
-    return res.status(400).json({ error: "Lệnh không hợp lệ" });
-  }
-
-  sendAlarmCommand(userId, command);
-  res.json({ message: `Đã gửi lệnh ${command} đến user ${userId}` });
-});
 
 
 const { handleAlert } = require("./fcm_services/handleAleart2");
 const authMiddleware = require("./utils/authMiddleware");
 
 const sendData = async () => {
-   // console.log("🕒 sendData được gọi");
+    // console.log("🕒 sendData được gọi");
     const users = await User.find().select("userId devices");
 
     for (const user of users) {
         for (const deviceId of user.devices) {
             const newData = latestSensorDataMap.get(deviceId);
-     //       console.log("📍 newData lấy ra:", newData);
+            //       console.log("📍 newData lấy ra:", newData);
             if (!newData) continue;
 
             // 🚨 Luôn kiểm tra nếu đang trong trạng thái nguy hiểm
             if (newData.smokeLevel >= 300 || newData.flame === true) {
-         //       console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
+                //       console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
                 await handleAlert(deviceId, newData);
             }
 
