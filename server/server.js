@@ -87,7 +87,7 @@ const latestSensorDataMap = new Map();
   }
 }
 
-app.post("/api/alarm/:userId/:command", authMiddleware, (req, res) => {
+app.post("/api/alarm/:userId/:command", (req, res) => {
   const userId = Number(req.params.userId);
   const command = req.params.command;
 
