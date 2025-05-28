@@ -11,6 +11,10 @@
 #include <WiFi.h>
 #include <WiFiManager.h>
 #include "mq2/mq_sensor.h"
+#include <ArduinoWebsockets.h>
+using namespace websockets;
+
+WebsocketsClient wsClient;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 unsigned long lastPrintTime = 0;
 
@@ -53,6 +57,11 @@ void sendDataToServer(int gas, bool flameDetected)
 
 void setup()
 {
+  wsClient.onMessage(onMessageCallback);
+
+  // Kết nối tới websocket server
+  wsClient.connect("ws://dungtc.iothings.vn:3000");
+
   Serial.begin(115200);
   Wire.begin(19, 21); // OLED
 
@@ -101,6 +110,33 @@ unsigned long sensorInterval = 2000;
 
 unsigned long lastAlertCheck = 0;
 unsigned long alertInterval = 500;
+bool alarmEnabled = true;
+void onMessageCallback(WebsocketsMessage message) {
+  Serial.print("Nhận tin nhắn từ server: ");
+  Serial.println(message.data());
+
+  StaticJsonDocument<200> doc;
+  DeserializationError err = deserializeJson(doc, message.data());
+  if (err) {
+    Serial.println("Lỗi parse JSON");
+    return;
+  }
+
+  const char* typeMsg = doc["type"];
+  if (strcmp(typeMsg, "alarm_command") == 0) {
+    const char* command = doc["command"];
+    if (strcmp(command, "alarm_off") == 0) {
+      alarmEnabled = false;
+      stopAlert();
+      Serial.println("🔕 Còi báo bị tắt từ xa");
+    } else if (strcmp(command, "alarm_on") == 0) {
+      alarmEnabled = true;
+      startAlert();
+      Serial.println("🔔 Còi báo bật lại");
+    }
+  }
+}
+
 
 void loop()
 {
@@ -138,7 +174,12 @@ void loop()
     }
     else if (flameDetected || gasLeaked)
     {
-      startAlert();
+      if (alarmEnabled) {
+    startAlert();
+  } else {
+    stopAlert(); // Tắt còi nhưng có thể vẫn báo đèn hoặc tín hiệu khác
+  }
+     // startAlert();
     }
     else
     {

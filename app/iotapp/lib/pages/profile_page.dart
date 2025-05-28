@@ -11,16 +11,17 @@ class ProfilePage extends StatefulWidget {
   final String email;
   final String token;
 
-  ProfilePage({
+  const ProfilePage({
     required this.userId,
     required this.username,
     required this.email,
     required this.phone,
     required this.token,
+    super.key,
   });
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
@@ -38,34 +39,33 @@ class _ProfilePageState extends State<ProfilePage> {
     phoneNumbers = List.from(widget.phone);
   }
 
- void _addPhoneNumber() async {
-  String phone = _phoneController.text.trim();
-  print("DEBUG: Phone entered = '$phone'"); // 👈 thêm dòng này
+  void _addPhoneNumber() async {
+    String phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      Fluttertoast.showToast(msg: tr("phone_required"));
+      return;
+    }
 
-  if (phone.isEmpty) {
-    Fluttertoast.showToast(msg: tr("phone_required"));
-    return;
+    bool success = await _authService.addPhoneNumber(phone, widget.token);
+    if (success) {
+      setState(() {
+        phoneNumbers.add(phone);
+        _phoneController.clear();
+      });
+      Fluttertoast.showToast(msg: tr("add_phone_success"));
+    } else {
+      Fluttertoast.showToast(msg: tr("add_phone_failed"));
+    }
   }
-
-  bool success = await _authService.addPhoneNumber(phone, widget.token);
-  if (success) {
-    setState(() {
-      phoneNumbers.add(phone);
-      _phoneController.clear();
-    });
-    Fluttertoast.showToast(msg: tr("add_phone_success"));
-  } else {
-    Fluttertoast.showToast(msg: tr("add_phone_failed"));
-  }
-}
 
   void _updateProfile() async {
     String newUsername = _usernameController.text.trim();
     String newEmail = _emailController.text.trim();
     String newPhone = _phoneController.text.trim();
     if (newUsername.isEmpty || newEmail.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("empty_username_email".tr())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("empty_username_email"))),
+      );
       return;
     }
 
@@ -73,8 +73,9 @@ class _ProfilePageState extends State<ProfilePage> {
     String? token = await _authService.getToken();
 
     if (userId == null || token == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("no_userid_token".tr())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr("no_userid_token"))),
+      );
       return;
     }
 
@@ -86,33 +87,46 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (success) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("update_success".tr())));
-
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr("update_success"),
+            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
       await Future.delayed(Duration(milliseconds: 500));
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("update_failed".tr())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr("update_failed"),
+            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("account_info".tr()),
+        title: Text(tr("account_info")),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
-          },
+          onPressed: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage()),
+          ),
         ),
       ),
       body: Padding(
@@ -147,7 +161,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   icon: Icon(Icons.add),
                   label: Text(tr("add")),
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                   ),
                 ),
               ],
@@ -159,6 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
                 elevation: 2,
+                color: theme.cardColor,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -177,12 +193,14 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ElevatedButton.icon(
                 onPressed: _updateProfile,
                 icon: Icon(Icons.save),
-                label: Text("update_info".tr()),
+                label: Text(tr("update_info")),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
                 ),
               ),
             ),
@@ -195,7 +213,11 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget buildLabel(String key) {
     return Text(
       tr(key),
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      ),
     );
   }
 

@@ -99,6 +99,16 @@
   "add": "Add",
   "location": "Location",
   "location_required": "Location is required",
-  "active": "Active"
+  "add_device": "Add Device",
+  "device_id": "Device ID",
+  "device_name": "Device Name",
+  "active": "Activate Device",
+  "add_device_button": "Add Device",
+  "add_device_success": "Device added successfully!",
+  "add_device_fail": "Failed to add device",
+  "please_enter_device_id": "Please enter device ID",
+  "please_enter_device_name": "Please enter device name",
+  "please_enter_location": "Please enter location",
+  "edit_device": "Edit Device"
 
 }

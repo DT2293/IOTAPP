@@ -36,76 +36,106 @@ class _EditDevicePageState extends State<EditDevicePage> {
   }
 
   Future<void> _updateDevice() async {
-  try {
-    await deviceService.updateDevice(
-      widget.device.deviceId,
-      Device(
-        deviceId: widget.device.deviceId,
-        deviceName: _deviceNameController.text.trim(),
-        location: _locationController.text.trim(),
-        active: _isActive,
-      ),
-    );
+    try {
+      await deviceService.updateDevice(
+        widget.device.deviceId,
+        Device(
+          deviceId: widget.device.deviceId,
+          deviceName: _deviceNameController.text.trim(),
+          location: _locationController.text.trim(),
+          active: _isActive,
+        ),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('update_success'.tr())),
-    );
-    Navigator.pop(context, true);
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('update_failed'.tr() + ': ${e.toString()}')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('update_success'.tr())),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('update_failed'.tr() + ': ${e.toString()}')),
+      );
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primaryColor = theme.colorScheme.primary;
+
     return Scaffold(
-      appBar: AppBar(title: Text('edit_device'.tr())),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: Text('edit_device'.tr()),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
+            Icon(Icons.devices, size: 80, color: primaryColor),
+            const SizedBox(height: 20),
+            _buildInputField(
               controller: _deviceNameController,
-              decoration: InputDecoration(
-                labelText: 'device_name'.tr(),
-                border: OutlineInputBorder(),
-              ),
+              label: 'device_name'.tr(),
+              icon: Icons.device_hub,
+              theme: theme,
             ),
-            SizedBox(height: 16),
-            TextField(
+            const SizedBox(height: 16),
+            _buildInputField(
               controller: _locationController,
-              decoration: InputDecoration(
-                labelText: 'location'.tr(),
-                border: OutlineInputBorder(),
-              ),
+              label: 'location'.tr(),
+              icon: Icons.location_on,
+              theme: theme,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
-                Text('active'.tr()),
+                Icon(Icons.toggle_on, color: primaryColor),
+                const SizedBox(width: 8),
+                Text('active'.tr(), style: TextStyle(fontSize: 16)),
+                Spacer(),
                 Switch(
                   value: _isActive,
-                  onChanged: (val) {
-                    setState(() {
-                      _isActive = val;
-                    });
-                  },
+                  onChanged: (val) => setState(() => _isActive = val),
+                  activeColor: primaryColor,
                 ),
               ],
             ),
-            SizedBox(height: 24),
-            ElevatedButton(
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
               onPressed: _updateDevice,
-              child: Text('update_info'.tr()),
+              icon: Icon(Icons.save),
+              label: Text('update_info'.tr()),
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                backgroundColor: primaryColor,
+                foregroundColor: theme.colorScheme.onPrimary,
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 4,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required ThemeData theme,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: theme.inputDecorationTheme.fillColor ?? (theme.brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100]),
       ),
     );
   }

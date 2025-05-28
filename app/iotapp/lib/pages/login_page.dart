@@ -97,10 +97,10 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                "IOT APP",
+                "FIRE SENSE",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.blue[900],
+                  color: const Color.fromARGB(255, 85, 6, 79),
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
               ElevatedButton(
                 onPressed: _login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor:  const Color.fromARGB(255, 66, 32, 100),
                   foregroundColor: Colors.white,
                   elevation: 5,
                   shape: RoundedRectangleBorder(
@@ -165,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                   onTap: navigateToForgotPassword,
                   child: Text(
                     tr('forgot_password'),
-                    style: TextStyle(fontSize: 16, color: Colors.blue[900]),
+                    style: TextStyle(fontSize: 16, color: const Color.fromARGB(255, 85, 6, 79)),
                   ),
                 ),
               ),
@@ -176,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     Text(
                       tr('no_account'),
-                      style: TextStyle(fontSize: 16, color: Colors.blue[900]),
+                      style: TextStyle(fontSize: 16, color: const Color.fromARGB(255, 85, 6, 79)),
                     ),
                     SizedBox(width: 5),
                     InkWell(
@@ -185,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                         tr('sign_up'),
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.blue[900],
+                         color: const Color.fromARGB(255, 85, 6, 79),
                           fontWeight: FontWeight.bold,
                         ),
                       ),

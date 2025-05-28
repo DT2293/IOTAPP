@@ -83,10 +83,10 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               children: [
                 Text(
-                  'IOT App',
+                  'FIRE SENSE',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.blue[900],
+                    color:const Color.fromARGB(255, 85, 6, 79),
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
@@ -229,9 +229,9 @@ class _RegisterPageState extends State<RegisterPage> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: Color.fromARGB(255, 85, 6, 79),
                     foregroundColor: Colors.white,
-                    shadowColor: Colors.blueAccent,
+                    shadowColor: Color.fromARGB(255, 85, 6, 79),
                     elevation: 5,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -264,7 +264,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     children: [
                       Text(
                         tr('already_have_account'),
-                        style: TextStyle(fontSize: 16, color: Colors.blue[900]),
+                        style: TextStyle(fontSize: 16, color: const Color.fromARGB(255, 85, 6, 79)),
                       ),
                       SizedBox(width: 5),
                       InkWell(
@@ -273,7 +273,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           tr('login'),
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.blue[900],
+                            color:const Color.fromARGB(255, 85, 6, 79),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

@@ -78,6 +78,16 @@ Future<List<Device>> getDevicesByUserId(int userId) async {
       throw Exception('Cập nhật thiết bị thất bại: $msg');
     }
   }
+
+   Future<void> deleteDevice(String deviceId) async {
+    try {
+      final encodedId = Uri.encodeComponent(deviceId.trim());
+      await _dio.delete('/devices/$encodedId');
+    } on DioException catch (e) {
+      final msg = e.response?.data['error'] ?? 'Lỗi không xác định';
+      throw Exception('Xóa thiết bị thất bại: $msg');
+    }
+  }
 }
 
 
@@ -87,15 +97,7 @@ Future<List<Device>> getDevicesByUserId(int userId) async {
 
 
 //   /// 🟢 Xóa thiết bị
-//   Future<void> deleteDevice(String deviceId) async {
-//     try {
-//       final encodedId = Uri.encodeComponent(deviceId.trim());
-//       await _dio.delete('/devices/$encodedId');
-//     } on DioException catch (e) {
-//       final msg = e.response?.data['error'] ?? 'Lỗi không xác định';
-//       throw Exception('Xóa thiết bị thất bại: $msg');
-//     }
-//   }
+//  
 
 //   /// 🟢 Lấy danh sách tất cả thiết bị của user
 //   Future<List<Map<String, dynamic>>> getAllDevices() async {

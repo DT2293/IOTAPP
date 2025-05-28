@@ -76,6 +76,29 @@ const clients = new Map();
 const previousData = new Map();
 const latestSensorDataMap = new Map();
 
+
+ function sendAlarmCommand(userId, command) {
+  if (!clients.has(userId)) return;
+  const msg = JSON.stringify({ type: "alarm_command", command }); // command: "alarm_on" hoặc "alarm_off"
+  for (const ws of clients.get(userId)) {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(msg);
+    }
+  }
+}
+
+app.post("/api/alarm/:userId/:command", (req, res) => {
+  const userId = Number(req.params.userId);
+  const command = req.params.command;
+
+  if (!["alarm_on", "alarm_off"].includes(command)) {
+    return res.status(400).json({ error: "Lệnh không hợp lệ" });
+  }
+
+  sendAlarmCommand(userId, command);
+  res.json({ message: `Đã gửi lệnh ${command} đến user ${userId}` });
+});
+
 app.post("/api/sensordata", async (req, res) => {
     try {
         const { deviceId, smokeLevel, flame } = req.body;
@@ -145,6 +168,11 @@ wss.on("connection", async (ws) => {
                     clients.get(user.userId).add(ws);
 
                     ws.send(JSON.stringify({ type: "auth_success", message: "Xác thực thành công!" }));
+
+                    ws.send(JSON.stringify({
+                        type: "alarm_command",
+                        command: "alarm_on"
+                    }));
                 } catch (err) {
                     ws.send(JSON.stringify({ type: "auth_error", message: "Token không hợp lệ!" }));
                     ws.close();
@@ -163,10 +191,13 @@ wss.on("connection", async (ws) => {
                 return;
             }
 
+
+
         } catch (err) {
             console.error("❌ Lỗi xử lý dữ liệu từ client:", err);
         }
     });
+
 
     ws.on("close", () => {
         console.log(`⚡ User ${ws.userId || "chưa xác thực"} ngắt kết nối`);
@@ -181,40 +212,21 @@ wss.on("connection", async (ws) => {
     ws.on("error", (err) => {
         console.error(`❌ Lỗi WebSocket: ${err.message}`);
     });
+
+   
 });
 
-// const { handleAlert } = require("./fcm_services/handleAleart2");
-// const sendData = async () => {
-//     console.log("🕒 sendData được gọi");
-//     const users = await User.find().select("userId devices");
+app.post('/api/alarm/:userId/:command', (req, res) => {
+  const userId = Number(req.params.userId);
+  const command = req.params.command; // "alarm_on" hoặc "alarm_off"
 
-//     for (const user of users) {
-//         for (const deviceId of user.devices) {
-//             const newData = latestSensorDataMap.get(deviceId);
-//             console.log("📍 newData lấy ra:", newData);
-//             if (!newData) continue;
+  if (!["alarm_on", "alarm_off"].includes(command)) {
+    return res.status(400).json({ error: "Lệnh không hợp lệ" });
+  }
 
-//             const oldData = previousData.get(deviceId);
-//             console.log("📍 oldData:", oldData);
-//             console.log("📍 newData:", newData);
-
-//             if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
-//                 console.log(`📊 Dữ liệu mới khác dữ liệu cũ: smokeLevel=${newData.smokeLevel}, flame=${newData.flame}`);
-
-//                 // if (newData.smokeLevel >= 300 || newData.flame) {
-//                 //   console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
-//                 //   await handleAlert(deviceId, newData);
-//                 // }
-//                 if ((newData.smokeLevel >= 300 || newData.flame) && (!oldData || newData.smokeLevel !== oldData.smokeLevel || newData.flame !== oldData.flame)) {
-//                     console.log(`🚨 Gửi cảnh báo cho thiết bị ${deviceId}`);
-//                     await handleAlert(deviceId, newData);
-//                 }
-
-//                 previousData.set(deviceId, newData);
-//             }
-//         }
-//     }
-// };
+  sendAlarmCommand(userId, command);
+  res.json({ message: `Đã gửi lệnh ${command} đến user ${userId}` });
+});
 
 
 const { handleAlert } = require("./fcm_services/handleAleart2");

@@ -118,5 +118,16 @@
   "delete": "Xóa",
   "location": "Vị trí",
   "location_required": "Vị trí là bắt buộc",
-  "active": "Kích hoạt"
+  "active": "Kích hoạt",
+  "add_device": "Thêm Thiết Bị",
+  "device_id": "Mã Thiết Bị",
+  "device_name": "Tên Thiết Bị",
+  "location": "Vị Trí",
+  "active": "Kích hoạt thiết bị",
+  "add_device_button": "Thêm Thiết Bị",
+  "add_device_success": "Thiết bị được thêm thành công!",
+  "add_device_fail": "Thêm thiết bị thất bại",
+  "please_enter_device_id": "Vui lòng nhập mã thiết bị",
+  "please_enter_device_name": "Vui lòng nhập tên thiết bị",
+  "please_enter_location": "Vui lòng nhập vị trí"
 }

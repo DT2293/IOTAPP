@@ -17,28 +17,31 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
         .map((e) => e.averageSmokeLevel)
         .fold<int>(0, (a, b) => a > b ? a : b);
 
-    List<FlSpot> tempSpots = data
-        .asMap()
-        .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.averageTemperature))
-        .toList();
+    List<FlSpot> tempSpots =
+        data
+            .asMap()
+            .entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value.averageTemperature))
+            .toList();
 
-    List<FlSpot> humidSpots = data
-        .asMap()
-        .entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.averageHumidity))
-        .toList();
+    List<FlSpot> humidSpots =
+        data
+            .asMap()
+            .entries
+            .map((e) => FlSpot(e.key.toDouble(), e.value.averageHumidity))
+            .toList();
 
-    List<FlSpot> smokeSpots = data
-        .asMap()
-        .entries
-        .map(
-          (e) => FlSpot(
-            e.key.toDouble(),
-            (e.value.averageSmokeLevel / maxSmoke) * 100,
-          ),
-        )
-        .toList();
+    List<FlSpot> smokeSpots =
+        data
+            .asMap()
+            .entries
+            .map(
+              (e) => FlSpot(
+                e.key.toDouble(),
+                (e.value.averageSmokeLevel / maxSmoke) * 100,
+              ),
+            )
+            .toList();
 
     final chartWidth = data.length * pixelPerPoint;
     final chartHeight = 400.0;
@@ -57,9 +60,15 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
                   LineChartData(
                     lineBarsData: [],
                     titlesData: FlTitlesData(
-                      bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                       leftTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -101,28 +110,42 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
                               interval: 1,
                               getTitlesWidget: (value, meta) {
                                 int index = value.toInt();
-                                if (index < 0 || index >= data.length) return const Text('');
-                                final date = DateFormat.Md().format(data[index].date);
-                                return Text(date, style: const TextStyle(fontSize: 10));
+                                if (index < 0 || index >= data.length)
+                                  return const Text('');
+                                final date = DateFormat.Md().format(
+                                  data[index].date,
+                                );
+                                return Text(
+                                  date,
+                                  style: const TextStyle(fontSize: 10),
+                                );
                               },
                             ),
                           ),
-                          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                           rightTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
                               reservedSize: 40,
                               interval: 20,
                               getTitlesWidget: (value, meta) {
-                                int smokeValue = ((value / 100) * maxSmoke).round();
+                                int smokeValue =
+                                    ((value / 100) * maxSmoke).round();
                                 if (value % 20 == 0) {
-                                  return Text(smokeValue.toString(), style: const TextStyle(color: Colors.green));
+                                  return Text(
+                                    smokeValue.toString(),
+                                    style: const TextStyle(color: Colors.green),
+                                  );
                                 }
                                 return Container();
                               },
                             ),
                           ),
-                          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                         ),
                         gridData: FlGridData(show: true),
                         borderData: FlBorderData(show: true),
@@ -160,14 +183,20 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
                               return spots.map((spot) {
                                 String label;
                                 if (spot.barIndex == 0) {
-                                  label = 'Nhiệt độ: ${spot.y.toStringAsFixed(1)}°C';
+                                  label =
+                                      'Nhiệt độ: ${spot.y.toStringAsFixed(1)}°C';
                                 } else if (spot.barIndex == 1) {
-                                  label = 'Độ ẩm: ${spot.y.toStringAsFixed(1)}%';
+                                  label =
+                                      'Độ ẩm: ${spot.y.toStringAsFixed(1)}%';
                                 } else {
-                                  final realSmoke = ((spot.y / 100) * maxSmoke).round();
+                                  final realSmoke =
+                                      ((spot.y / 100) * maxSmoke).round();
                                   label = 'Khói: $realSmoke';
                                 }
-                                return LineTooltipItem(label, const TextStyle(color: Colors.white));
+                                return LineTooltipItem(
+                                  label,
+                                  const TextStyle(color: Colors.white),
+                                );
                               }).toList();
                             },
                           ),
@@ -180,7 +209,16 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
             ],
           ),
         ),
-
+    const SizedBox(height: 20),
+                                              Text(
+                                                tr("staticscal"),
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
         const SizedBox(height: 10),
 
         // Legend nằm riêng biệt bên dưới, KHÔNG bị scroll
@@ -191,13 +229,12 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-  _buildLegendItem(Colors.red, '${tr('temperature')} (°C)'),
-  const SizedBox(width: 16),
-  _buildLegendItem(Colors.blue, '${tr('humidity')} (%)'),
-  const SizedBox(width: 16),
-  _buildLegendItem(Colors.green, tr('smoke_level')),
-],
-
+                _buildLegendItem(Colors.red, '${tr('temperature')} (°C)'),
+                const SizedBox(width: 16),
+                _buildLegendItem(Colors.blue, '${tr('humidity')} (%)'),
+                const SizedBox(width: 16),
+                _buildLegendItem(Colors.green, tr('smoke_level')),
+              ],
             ),
           ),
         ),
@@ -216,4 +253,3 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
     );
   }
 }
-

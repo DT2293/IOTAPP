@@ -28,7 +28,7 @@ class HomeDrawer extends StatelessWidget {
           UserAccountsDrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade700, Colors.blue.shade900],
+                colors: [const Color.fromARGB(255, 79, 9, 82), const Color.fromARGB(121, 108, 9, 88)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
