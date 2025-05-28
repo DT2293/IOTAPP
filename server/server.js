@@ -75,7 +75,8 @@ const wss = new WebSocket.Server({ server });
 const clients = new Map();
 const previousData = new Map();
 const latestSensorDataMap = new Map();
-
+const deviceClients = new Map(); // key: deviceId, value: ws
+// Hàm gửi lệnh báo động đến tất cả WebSocket của user
 
  function sendAlarmCommand(userId, command) {
   if (!clients.has(userId)) return;
@@ -86,8 +87,28 @@ const latestSensorDataMap = new Map();
     }
   }
 }
+function sendAlarmCommandToDevice(deviceId, command) {
+  const wsDevice = deviceClients.get(deviceId);
+  if (wsDevice && wsDevice.readyState === WebSocket.OPEN) {
+    const msg = JSON.stringify({ type: "alarm_command", command, deviceId });
+    wsDevice.send(msg);
+  } else {
+    console.warn(`Không tìm thấy kết nối thiết bị ${deviceId}`);
+  }
+}
+// app.post("/api/alarm/:userId/:command", (req, res) => {
+//   const userId = Number(req.params.userId);
+//   const command = req.params.command;
 
-app.post("/api/alarm/:userId/:command", (req, res) => {
+//   if (!["alarm_on", "alarm_off"].includes(command)) {
+//     return res.status(400).json({ error: "Lệnh không hợp lệ" });
+//   }
+
+//   sendAlarmCommand(userId, command);
+//   res.json({ message: `Đã gửi lệnh ${command} đến user ${userId}` });
+// });
+
+app.post("/api/alarm/:userId/:command", async (req, res) => {
   const userId = Number(req.params.userId);
   const command = req.params.command;
 
@@ -95,9 +116,19 @@ app.post("/api/alarm/:userId/:command", (req, res) => {
     return res.status(400).json({ error: "Lệnh không hợp lệ" });
   }
 
-  sendAlarmCommand(userId, command);
-  res.json({ message: `Đã gửi lệnh ${command} đến user ${userId}` });
+  // Lấy danh sách thiết bị user được phép điều khiển
+  const user = await User.findOne({ userId }).select("devices").lean();
+  if (!user) {
+    return res.status(404).json({ error: "User không tồn tại" });
+  }
+
+  for (const deviceId of user.devices) {
+    sendAlarmCommandToDevice(deviceId, command);
+  }
+
+  res.json({ message: `Đã gửi lệnh ${command} đến tất cả thiết bị của user ${userId}` });
 });
+
 
 app.post("/api/sensordata", async (req, res) => {
     try {
@@ -107,9 +138,9 @@ app.post("/api/sensordata", async (req, res) => {
             return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
         }
 
-        console.log(`📥 Dữ liệu từ thiết bị ${deviceId}:`);
-        console.log(`💨 Mức khói: ${smokeLevel}`);
-        console.log(`🔥 Lửa: ${flame ? "Có" : "Không"}`);
+        // console.log(`📥 Dữ liệu từ thiết bị ${deviceId}:`);
+        // console.log(`💨 Mức khói: ${smokeLevel}`);
+        // console.log(`🔥 Lửa: ${flame ? "Có" : "Không"}`);
         console.log("------------------------------------");
 
         const sensorData = { deviceId, smokeLevel, flame, time: new Date() };
@@ -139,6 +170,8 @@ app.post("/api/sensordata", async (req, res) => {
     }
 });
 
+
+
 wss.on("connection", async (ws) => {
     console.log("⚡ Một client vừa kết nối, chờ xác thực...");
     ws.isAuthenticated = false;
@@ -146,6 +179,7 @@ wss.on("connection", async (ws) => {
     ws.on("message", async (message) => {
         // console.log("📥 Server nhận message từ client:", message);
 console.log("📥 Server nhận message từ client:", message.toString());
+
         try {
             const data = JSON.parse(message);
 
@@ -181,60 +215,82 @@ console.log("📥 Server nhận message từ client:", message.toString());
                 }
                 return;
             }
-            
 
             if (data.type === "device_authenticate") {
                 // Xác thực thiết bị đơn giản
                 const deviceId = data.deviceId;
-                if (typeof deviceId === "string" || typeof deviceId === "string") {
+                if (typeof deviceId === "string") {
                     ws.isAuthenticated = true;
                     ws.isDevice = true;
                     ws.deviceId = deviceId;
+                    deviceClients.set(deviceId, ws);
                     console.log(`⚡ Thiết bị ${deviceId} đã kết nối WebSocket không cần JWT`);
                     ws.send(JSON.stringify({ type: "auth_success", message: "Thiết bị xác thực thành công" }));
                 } else {
                     ws.send(JSON.stringify({ type: "auth_error", message: "deviceId không hợp lệ" }));
                     ws.close();
                 }
+                // Không xóa deviceClients ở đây nữa
                 return;
             }
-
 
             if (!ws.isAuthenticated) {
                 ws.send(JSON.stringify({ type: "auth_error", message: "Bạn chưa xác thực!" }));
                 return;
             }
 
+            // Kiểm tra quyền truy cập thiết bị
             const userDevices = await User.findOne({ userId: ws.userId }).select("devices").lean();
-            if (!userDevices || !userDevices.devices.includes(data.deviceId)) {
+
+            if (!userDevices || !Array.isArray(userDevices.devices) || !data.deviceId || !userDevices.devices.includes(data.deviceId)) {
                 console.warn(`⚠️ User ${ws.userId} không có quyền truy cập deviceId ${data.deviceId}`);
                 return;
             }
 
-
+            // Xử lý các message khác nếu cần
 
         } catch (err) {
             console.error("❌ Lỗi xử lý dữ liệu từ client:", err);
         }
     });
 
-
     ws.on("close", () => {
-        console.log(`⚡ User ${ws.userId || "chưa xác thực"} ngắt kết nối`);
+        console.log(`⚡ User ${ws.userId || ws.deviceId || "chưa xác thực"} ngắt kết nối`);
+
         if (ws.userId && clients.has(ws.userId)) {
             clients.get(ws.userId).delete(ws);
             if (clients.get(ws.userId).size === 0) {
                 clients.delete(ws.userId);
             }
-        }   
+        }
+
+        if (ws.isDevice && ws.deviceId && deviceClients.has(ws.deviceId)) {
+            deviceClients.delete(ws.deviceId);
+        }
     });
+
+    ws.on("error", (err) => {
+        console.error(`❌ Lỗi WebSocket: ${err.message}`);
+    });
+});
+
+
+    // ws.on("close", () => {
+    //     console.log(`⚡ User ${ws.userId || "chưa xác thực"} ngắt kết nối`);
+    //     if (ws.userId && clients.has(ws.userId)) {
+    //         clients.get(ws.userId).delete(ws);
+    //         if (clients.get(ws.userId).size === 0) {
+    //             clients.delete(ws.userId);
+    //         }
+    //     }   
+    // });
 
     ws.on("error", (err) => {
         console.error(`❌ Lỗi WebSocket: ${err.message}`);
     });
 
    
-});
+//});
 
 app.post('/api/alarm/:userId/:command', (req, res) => {
   const userId = Number(req.params.userId);
