@@ -144,7 +144,8 @@ wss.on("connection", async (ws) => {
     ws.isAuthenticated = false;
 
     ws.on("message", async (message) => {
-         console.log("📥 Server nhận message từ client:", message);
+        // console.log("📥 Server nhận message từ client:", message);
+console.log("📥 Server nhận message từ client:", message.toString());
         try {
             const data = JSON.parse(message);
 
