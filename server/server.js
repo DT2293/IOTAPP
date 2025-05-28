@@ -115,7 +115,7 @@ app.post("/api/sensordata", async (req, res) => {
         // console.log(`📥 Dữ liệu từ thiết bị ${deviceId}:`);
         // console.log(`💨 Mức khói: ${smokeLevel}`);
         // console.log(`🔥 Lửa: ${flame ? "Có" : "Không"}`);
-        console.log("------------------------------------");
+       // console.log("------------------------------------");
 
         const sensorData = { deviceId, smokeLevel, flame, time: new Date() };
 
@@ -151,8 +151,8 @@ wss.on("connection", async (ws) => {
     ws.isAuthenticated = false;
 
     ws.on("message", async (message) => {
-        // console.log("📥 Server nhận message từ client:", message);
-console.log("📥 Server nhận message từ client:", message.toString());
+        console.log("📥 Server nhận message từ client:", message);
+        console.log("📥 Server nhận message từ client:", message.toString());
 
         try {
             const data = JSON.parse(message);

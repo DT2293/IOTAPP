@@ -35,11 +35,11 @@ async function sendNotificationToDevice(fcmToken, title, body, data = {}) {
     },
   };
 
-  console.log("🔧 Message Object:", message);
+ // console.log("🔧 Message Object:", message);
 
   try {
     const response = await admin.messaging().send(message);
-    console.log("✅ Gửi thông báo thành công:", response);
+ //   console.log("✅ Gửi thông báo thành công:", response);
   } catch (error) {
     console.error("❌ Lỗi khi gửi thông báo:", error.message);
   }

@@ -8,7 +8,7 @@ async function handleAlert(deviceId, sensorData) {
   for (const user of users) {
     const fcmTokens = user.fcmToken;  // Lấy mảng fcmTokens từ cơ sở dữ liệu
 
-    console.log(`🔍 Đang xử lý user ${user.userId} với FCM tokens:`, fcmTokens);
+  //  console.log(`🔍 Đang xử lý user ${user.userId} với FCM tokens:`, fcmTokens);
 
     if (fcmTokens && Array.isArray(fcmTokens) && fcmTokens.length > 0) {
       const title = "🚨 Cảnh báo cháy!";
