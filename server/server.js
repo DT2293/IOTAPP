@@ -272,6 +272,9 @@ console.log("📥 Server nhận message từ client:", message.toString());
     ws.on("error", (err) => {
         console.error(`❌ Lỗi WebSocket: ${err.message}`);
     });
+     ws.on("error", (err) => {
+        console.error(`❌ Lỗi WebSocket: ${err.message}`);
+    });
 });
 
 
@@ -285,9 +288,7 @@ console.log("📥 Server nhận message từ client:", message.toString());
     //     }   
     // });
 
-    ws.on("error", (err) => {
-        console.error(`❌ Lỗi WebSocket: ${err.message}`);
-    });
+   
 
    
 //});
