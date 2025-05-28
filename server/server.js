@@ -47,15 +47,7 @@ const latestSensorDataMap = new Map();
 const deviceClients = new Map(); // key: deviceId, value: ws
 // Hàm gửi lệnh báo động đến tất cả WebSocket của user
 
- function sendAlarmCommand(userId, command) {
-  if (!clients.has(userId)) return;
-  const msg = JSON.stringify({ type: "alarm_command", command }); // command: "alarm_on" hoặc "alarm_off"
-  for (const ws of clients.get(userId)) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(msg);
-    }
-  }
-}
+
 function sendAlarmCommandToDevice(deviceId, command) {
   console.log(`👉 Gửi lệnh đến thiết bị: ${deviceId}, command: ${command}`);
   const wsDevice = deviceClients.get(deviceId);
@@ -69,19 +61,6 @@ function sendAlarmCommandToDevice(deviceId, command) {
     console.warn(`⚠️ Không tìm thấy kết nối thiết bị ${deviceId}`);
   }
 }
-
-// app.post("/api/alarm/:userId/:command", (req, res) => {
-//   const userId = Number(req.params.userId);
-//   const command = req.params.command;
-
-//   if (!["alarm_on", "alarm_off"].includes(command)) {
-//     return res.status(400).json({ error: "Lệnh không hợp lệ" });
-//   }
-
-//   sendAlarmCommand(userId, command);
-//   res.json({ message: `Đã gửi lệnh ${command} đến user ${userId}` });
-// });
-
 app.post("/api/alarm/:userId/:command", async (req, res) => {
   const userId = Number(req.params.userId);
   const command = req.params.command;
