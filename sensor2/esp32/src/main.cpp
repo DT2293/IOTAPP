@@ -278,7 +278,7 @@
 
   unsigned long lastAlertCheck = 0;
   unsigned long alertInterval = 500;
-  bool alarmEnabled = false;
+  bool alarmEnabled = true;
   void onMessageCallback(WebsocketsMessage message)
   {
     Serial.print("Nhận tin nhắn từ server: ");

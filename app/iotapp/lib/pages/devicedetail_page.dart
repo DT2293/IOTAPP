@@ -13,6 +13,8 @@ class DeviceDetailPage extends StatefulWidget {
   _DeviceDetailPageState createState() => _DeviceDetailPageState();
 }
 
+bool isAlarmOn = false;
+
 class _DeviceDetailPageState extends State<DeviceDetailPage> {
   @override
   void initState() {
@@ -66,17 +68,33 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                       isDanger: true,
                     ),
                     Spacer(),
-                    ElevatedButton(
-                      onPressed: () {
-                        wsProvider.sendAlarmCommand(true); // Bật còi
-                      },
-                      child: const Text("Bật còi"),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        wsProvider.sendAlarmCommand(false); // Tắt còi
-                      },
-                      child: const Text("Tắt còi"),
+
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "Còi báo",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Switch(
+                          value: isAlarmOn,
+                          onChanged: (value) {
+                            setState(() {
+                              isAlarmOn = value;
+                            });
+                            wsProvider.sendAlarmCommand(
+                              value,
+                            ); // gửi lệnh bật/tắt
+                          },
+                          activeColor: Colors.green,
+                          inactiveThumbColor: Colors.red,
+                          inactiveTrackColor: Colors.red.shade200,
+                        ),
+                      ],
                     ),
                   ],
                 ),

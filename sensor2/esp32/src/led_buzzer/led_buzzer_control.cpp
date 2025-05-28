@@ -78,7 +78,6 @@ void initLedBuzzer() {
 void startAlert() {
 
   digitalWrite(BUZZER_PIN, HIGH);
-   Serial.println("Bật còi");
   digitalWrite(RED_LED, HIGH);
   digitalWrite(YELLOW_LED, LOW);
   digitalWrite(GREEN_LED, LOW);
@@ -86,7 +85,6 @@ void startAlert() {
 
 void stopAlert() {
   digitalWrite(BUZZER_PIN, LOW);
-   Serial.println("tắt còi");
   digitalWrite(RED_LED, LOW);
   digitalWrite(YELLOW_LED, LOW);
   digitalWrite(GREEN_LED, HIGH);

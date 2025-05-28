@@ -61,26 +61,26 @@ function sendAlarmCommandToDevice(deviceId, command) {
         console.warn(`⚠️ Không tìm thấy kết nối thiết bị ${deviceId}`);
     }
 }
-app.post("/api/alarm/:userId/:command", async (req, res) => {
-    const userId = Number(req.params.userId);
-    const command = req.params.command;
+// app.post("/api/alarm/:userId/:command", async (req, res) => {
+//     const userId = Number(req.params.userId);
+//     const command = req.params.command;
 
-    if (!["alarm_on", "alarm_off"].includes(command)) {
-        return res.status(400).json({ error: "Lệnh không hợp lệ" });
-    }
+//     if (!["alarm_on", "alarm_off"].includes(command)) {
+//         return res.status(400).json({ error: "Lệnh không hợp lệ" });
+//     }
 
-    // Lấy danh sách thiết bị user được phép điều khiển
-    const user = await User.findOne({ userId }).select("devices").lean();
-    if (!user) {
-        return res.status(404).json({ error: "User không tồn tại" });
-    }
+//     // Lấy danh sách thiết bị user được phép điều khiển
+//     const user = await User.findOne({ userId }).select("devices").lean();
+//     if (!user) {
+//         return res.status(404).json({ error: "User không tồn tại" });
+//     }
 
-    for (const deviceId of user.devices) {
-        sendAlarmCommandToDevice(deviceId, command);
-    }
+//     for (const deviceId of user.devices) {
+//         sendAlarmCommandToDevice(deviceId, command);
+//     }
 
-    res.json({ message: `Đã gửi lệnh ${command} đến tất cả thiết bị của user ${userId}` });
-});
+//     res.json({ message: `Đã gửi lệnh ${command} đến tất cả thiết bị của user ${userId}` });
+// });
 
 
 app.post("/api/sensordata", async (req, res) => {
