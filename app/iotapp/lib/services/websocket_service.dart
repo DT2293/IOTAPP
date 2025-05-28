@@ -155,17 +155,22 @@ class WebSocketProvider with ChangeNotifier {
     }));
   }
 
-  void sendAlarmCommand(bool turnOn) {
-    if (!_isConnected || !_isAuthorized || _deviceId == null) return;
+ void sendAlarmCommand(bool turnOn) {
+  if (!_isConnected || !_isAuthorized || _deviceId == null) return;
 
-    _channel?.sink.add(jsonEncode({
-      "type": "alarm_command",
-      "command": turnOn ? "alarm_on" : "alarm_off",
-    }));
+  final command = {
+    "type": "alarm_command",
+    "command": turnOn ? "alarm_on" : "alarm_off",
+    "deviceId": _deviceId, // 👉 thêm dòng này!
+  };
 
-    _alarmOn = turnOn;
-    notifyListeners();
-  }
+  print("📤 Gửi alarm command: $command"); // ✅ Log kiểm tra
+
+  _channel?.sink.add(jsonEncode(command));
+
+  _alarmOn = turnOn;
+  notifyListeners();
+}
 
   void disconnect() {
     _channel?.sink.close();
@@ -174,3 +179,6 @@ class WebSocketProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+
+
+

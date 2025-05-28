@@ -1,3 +1,152 @@
+// #include <HTTPClient.h>
+// #include <ArduinoJson.h>
+// #include "config.h"
+// #include <Adafruit_SSD1306.h>
+// #include <Adafruit_GFX.h>
+// #include "configs.h"
+// #include "rtc/rtc_manager.h"
+// #include "display/display_manager.h"
+// #include "flame/flame_sensor.h"
+// #include "led_buzzer/led_buzzer_control.h"
+// #include <WiFi.h>
+// #include <WiFiManager.h>
+// #include "mq2/mq_sensor.h"
+// Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+// unsigned long lastPrintTime = 0;
+
+// String deviceId;
+
+// void sendDataToServer(int gas, bool flameDetected)
+// {
+//   if (WiFi.status() == WL_CONNECTED)
+//   {
+//     HTTPClient http;
+//     http.begin("http://dungtc.iothings.vn/api/sensordata"); // Thay bằng IP server của bạn
+//     http.addHeader("Content-Type", "application/json");
+
+//     StaticJsonDocument<256> doc;
+//     doc["deviceId"] = deviceId;
+//     doc["smokeLevel"] = gas;
+//     //  doc["flame"] = flameDetected ? 1 : 0;
+//     doc["flame"] = flameDetected; // gửi đúng kiểu boolean
+
+//     String requestBody;
+//     serializeJson(doc, requestBody);
+
+//     int httpResponseCode = http.POST(requestBody);
+//     if (httpResponseCode > 0)
+//     {
+//       Serial.printf("✅ Gửi thành công: %d\n", httpResponseCode);
+//     }
+//     else
+//     {
+//       Serial.printf("❌ Gửi thất bại: %s\n", http.errorToString(httpResponseCode).c_str());
+//     }
+
+//     http.end();
+//   }
+//   else
+//   {
+//     Serial.println("❌ Không có WiFi!");
+//   }
+// }
+
+// void setup()
+// {
+//   Serial.begin(115200);
+//   Wire.begin(19, 21); // OLED
+
+//   initDisplay();
+//   initFlameSensor();
+//   initLedBuzzer();
+//   digitalWrite(BUZZER_PIN, LOW);
+//   Serial.println("Khởi động WiFiManager...");
+
+//   WiFiManager wifiManager;
+//   if (!wifiManager.autoConnect("ESP32-Config-AP"))
+//   {
+//     Serial.println("Không kết nối được WiFi và cấu hình WiFi thất bại!");
+//   }
+//   else
+//   {
+//     Serial.println("WiFi đã kết nối!");
+//     Serial.print("Địa chỉ IP hiện tại: ");
+//     Serial.println(WiFi.localIP());
+//     display.clearDisplay();
+//     display.setTextSize(1);
+//     display.setTextColor(WHITE);
+//     display.setCursor(0, 0);
+//     display.println("WiFi Connected!");
+//     display.print("IP: ");
+//     display.println(WiFi.localIP());
+//     display.display();
+//   }
+
+//   WiFi.mode(WIFI_STA);
+//   deviceId = WiFi.macAddress();
+
+//   String jsonPayload = "{\"deviceId\":\"" + deviceId + "\"}";
+
+//   showQRCode(jsonPayload);
+
+//   unsigned long qrStartTime = millis();
+//   while (millis() - qrStartTime < 600)
+//   {
+//     delay(10);
+//   }
+//   Serial.println("Setup hoàn thành.");
+// }
+// unsigned long lastSensorRead = 0;
+// unsigned long sensorInterval = 2000;
+
+// unsigned long lastAlertCheck = 0;
+// unsigned long alertInterval = 500;
+
+// void loop()
+// {
+//   unsigned long currentMillis = millis();
+
+//   if (currentMillis - lastSensorRead >= sensorInterval)
+//   {
+//     lastSensorRead = currentMillis;
+
+//     int analogFlameVal, digitalFlameVal;
+//     bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
+
+//     int analogGasVal, digitalGasVal;
+//     readMQSensor(analogGasVal, digitalGasVal);
+
+//     sendDataToServer(analogGasVal, flameDetected);
+//     Serial.printf("💨 %d | 🔥 %s\n", analogGasVal, flameDetected ? "Có lửa" : "Không");
+
+//     updateDisplay(flameDetected);
+//   }
+
+//   if (currentMillis - lastAlertCheck >= alertInterval)
+//   {
+//     lastAlertCheck = currentMillis;
+
+//     int analogGasVal, digitalGasVal;
+//     readMQSensor(analogGasVal, digitalGasVal);
+//     bool gasLeaked = (analogGasVal > 800 || digitalGasVal == LOW);
+//     int analogFlameVal, digitalFlameVal;
+//     bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
+
+//     if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1)
+//     {
+//       noSignalAlert();
+//     }
+//     else if (flameDetected || gasLeaked)
+//     {
+//       startAlert();
+//     }
+//     else
+//     {
+//       stopAlert();
+//     }
+//   }
+// }
+
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "config.h"
@@ -54,14 +203,21 @@ void sendDataToServer(int gas, bool flameDetected)
     Serial.println("❌ Không có WiFi!");
   }
 }
+void sendDeviceAuthenticate() {
+  StaticJsonDocument<128> doc;
+  doc["type"] = "device_authenticate";
+  doc["deviceId"] = deviceId;
+
+  String jsonStr;
+  serializeJson(doc, jsonStr);
+
+  wsClient.send(jsonStr);
+  Serial.println("[WS] Đã gửi xác thực device_authenticate: " + jsonStr);
+}
+
 void onMessageCallback(WebsocketsMessage message);
 void setup()
 {
-  wsClient.onMessage(onMessageCallback);
-
-  // Kết nối tới websocket server
-  wsClient.connect("ws://dungtc.iothings.vn:3000");
-
   Serial.begin(115200);
   Wire.begin(19, 21); // OLED
 
@@ -81,6 +237,10 @@ void setup()
     Serial.println("WiFi đã kết nối!");
     Serial.print("Địa chỉ IP hiện tại: ");
     Serial.println(WiFi.localIP());
+
+    // Gán MAC address trước khi dùng nó
+    deviceId = WiFi.macAddress();
+
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -88,14 +248,26 @@ void setup()
     display.println("WiFi Connected!");
     display.print("IP: ");
     display.println(WiFi.localIP());
+
+    wsClient.onMessage(onMessageCallback);
+    wsClient.onEvent([](WebsocketsEvent event, String data){
+  if (event == WebsocketsEvent::ConnectionOpened) {
+    Serial.println("✅ WebSocket đã kết nối, gửi xác thực...");
+    sendDeviceAuthenticate();
+  }
+});
+    wsClient.connect("ws://dungtc.iothings.vn:3000");
+
+    sendDeviceAuthenticate(); // Bây giờ deviceId đã có giá trị
+
     display.display();
   }
 
   WiFi.mode(WIFI_STA);
-  deviceId = WiFi.macAddress();
+
+  // Không cần gọi lại deviceId ở đây nữa vì đã gán rồi ở trên
 
   String jsonPayload = "{\"deviceId\":\"" + deviceId + "\"}";
-
   showQRCode(jsonPayload);
 
   unsigned long qrStartTime = millis();
@@ -105,6 +277,7 @@ void setup()
   }
   Serial.println("Setup hoàn thành.");
 }
+
 unsigned long lastSensorRead = 0;
 unsigned long sensorInterval = 2000;
 
@@ -140,6 +313,7 @@ void onMessageCallback(WebsocketsMessage message) {
 
 void loop()
 {
+    wsClient.poll();
   unsigned long currentMillis = millis();
 
   if (currentMillis - lastSensorRead >= sensorInterval)
@@ -164,9 +338,10 @@ void loop()
 
     int analogGasVal, digitalGasVal;
     readMQSensor(analogGasVal, digitalGasVal);
-    bool gasLeaked = (analogGasVal > 800 || digitalGasVal == LOW);
+    bool gasLeaked = (analogGasVal > 300 || digitalGasVal == HIGH);
     int analogFlameVal, digitalFlameVal;
     bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
+    Serial.printf("⚙️ Trạng thái còi: %s\n", alarmEnabled ? "BẬT" : "TẮT");
 
     if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1)
     {
@@ -175,10 +350,10 @@ void loop()
     else if (flameDetected || gasLeaked)
     {
       if (alarmEnabled) {
-    startAlert();
-  } else {
-    stopAlert(); // Tắt còi nhưng có thể vẫn báo đèn hoặc tín hiệu khác
-  }
+         startAlert();
+       } else {
+        stopAlert(); // Tắt còi nhưng có thể vẫn báo đèn hoặc tín hiệu khác
+     }
      // startAlert();
     }
     else
@@ -186,187 +361,6 @@ void loop()
       stopAlert();
     }
   }
+
 }
 
-// #define BLYNK_TEMPLATE_ID "TMPL6lIbB6__g"
-// #define BLYNK_TEMPLATE_NAME "sensor"
-// #define BLYNK_AUTH_TOKEN "NoyfeonUVqzMsSW6yGK2fIyEbOsI9FTf"
-// #include "config.h"
-// #include <Adafruit_SSD1306.h>
-// #include <Adafruit_GFX.h>
-// #include "configs.h"
-// #include "rtc/rtc_manager.h"
-// #include "display/display_manager.h"
-// #include "flame/flame_sensor.h"
-// #include "led_buzzer/led_buzzer_control.h"
-// #include <WiFi.h>
-// #include <WiFiManager.h>
-// #include <BlynkSimpleEsp32.h>
-// Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-// unsigned long lastPrintTime = 0;
-// String deviceId;  // Global variable to store MAC address
-
-// void setup()
-// {
-//   Serial.begin(115200);
-//   Wire.begin(19, 21); // OLED
-
-//   initRTC();
-//   initDisplay();
-//   initFlameSensor();
-//   initLedBuzzer();
-//   digitalWrite(BUZZER_PIN, LOW);
-
-//   Serial.println("Khởi động WiFiManager...");
-
-//   WiFiManager wifiManager;
-//   if (!wifiManager.autoConnect("ESP32-Config-AP")) {
-//     Serial.println("Không kết nối được WiFi và cấu hình WiFi thất bại!");
-//     // ESP.restart(); // nếu muốn restart
-//   } else {
-//     Serial.println("WiFi đã kết nối!");
-//     Serial.print("Địa chỉ IP hiện tại: ");
-//     Serial.println(WiFi.localIP());
-
-//     display.clearDisplay();
-//     display.setTextSize(1);
-//     display.setTextColor(WHITE);
-//     display.setCursor(0, 0);
-//     display.println("WiFi Connected!");
-//     display.print("IP: ");
-//     display.println(WiFi.localIP());
-//     display.display();
-//   }
-
-//   WiFi.mode(WIFI_STA);
-//   deviceId = WiFi.macAddress();
-
-//   String jsonPayload = "{\"deviceId\":\"" + deviceId + "\"}";
-
-//   showQRCode(jsonPayload);
-
-//   unsigned long qrStartTime = millis();
-//   while (millis() - qrStartTime < 60000) {
-//     Blynk.run();  // Giữ kết nối Blynk trong lúc hiển thị QR
-//     delay(100);
-//   }
-
-//   // Khởi động Blynk sau khi WiFi đã kết nối
-//   Blynk.config(BLYNK_AUTH_TOKEN);
-//   while (Blynk.connect() == false) {
-//     delay(500);
-//     Serial.println("Đang kết nối Blynk...");
-//   }
-
-//   Serial.println("Setup hoàn thành.");
-// }
-
-// void loop()
-// {
-//   int analogVal, digitalVal;
-
-//   bool flameDetected = isFlameDetected(analogVal, digitalVal);
-
-//   if (digitalVal == -1 || analogVal > 4095)
-//   {
-//     noSignalAlert();
-//   }
-//   else if (flameDetected)
-//   {
-//     startAlert();
-//   }
-//   else
-//   {
-//     stopAlert();
-//   }
-//   Blynk.virtualWrite(V2, flameDetected ? "🔥 Có lửa!" : "✅ An toàn");
-//   updateDisplay(isFlameDetected(analogVal, digitalVal));
-//   Blynk.run();
-// }
-
-// BLYNK_CONNECTED() {
-//   Blynk.virtualWrite(V0, deviceId);  // V4 sẽ hiển thị deviceId
-// }
-
-// #include "config.h"
-// #include <Adafruit_SSD1306.h>
-// #include <Adafruit_GFX.h>
-// #include "configs.h"
-// #include "rtc/rtc_manager.h"
-// #include "display/display_manager.h"
-// #include "flame/flame_sensor.h"
-// #include "led_buzzer/led_buzzer_control.h"
-// #include <WiFi.h>
-// #include <WiFiManager.h>
-
-// Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-// unsigned long lastPrintTime = 0;
-
-// void setup()
-// {
-//   Serial.begin(115200);
-//   Wire.begin(19, 21); // OLED
-
-//   initRTC();
-//   initDisplay();
-//   initFlameSensor();
-//   initLedBuzzer();
-//   digitalWrite(BUZZER_PIN, LOW);
-// // Nếu ESP32 không kết nối được WiFi đã lưu thì sẽ tạo AP để cấu hình
-//   Serial.println("Khởi động WiFiManager...");
-
-//   WiFiManager wifiManager;
-//   if (!wifiManager.autoConnect("ESP32-Config-AP")) {
-//     Serial.println("Không kết nối được WiFi và cấu hình WiFi thất bại!");
-//     // Có thể reset lại hoặc dừng ở đây tùy nhu cầu
-//     // ESP.restart();
-//   } else {
-//     Serial.println("WiFi đã kết nối!");
-//     Serial.print("Địa chỉ IP hiện tại: ");
-//     Serial.println(WiFi.localIP());
-
-//     // Hiển thị IP lên OLED (ví dụ)
-//     display.clearDisplay();
-//     display.setTextSize(1);
-//     display.setTextColor(WHITE);
-//     display.setCursor(0, 0);
-//     display.println("WiFi Connected!");
-//     display.print("IP: ");
-//     display.println(WiFi.localIP());
-//     display.display();
-//   }
-
-//     WiFi.mode(WIFI_STA);  // Khởi động WiFi chế độ station để lấy MAC
-//   String deviceId = WiFi.macAddress();
-//   String jsonPayload = "{\"deviceId\":\"" + deviceId + "\"}";
-
-//   showQRCode(jsonPayload);
-//    unsigned long qrStartTime = millis();
-//   while (millis() - qrStartTime < 60000) {
-//     // Giữ QR code trên màn hình 60 giây, có thể chèn thêm logic nếu cần
-//     delay(100);
-//   }
-//   Serial.println("Setup hoàn thành.");
-// }
-
-// void loop()
-// {
-//   int analogVal, digitalVal;
-
-//   bool flameDetected = isFlameDetected(analogVal, digitalVal);
-
-//   if (digitalVal == -1 || analogVal > 4095)
-//   {
-//     noSignalAlert();
-//   }
-//   else if (flameDetected)
-//   {
-//     startAlert();
-//   }
-//   else
-//   {
-//     stopAlert();
-//   }
-
-//   updateDisplay(isFlameDetected(analogVal, digitalVal));
-// }

@@ -179,6 +179,24 @@ wss.on("connection", async (ws) => {
                 }
                 return;
             }
+            
+
+            if (data.type === "device_authenticate") {
+                // Xác thực thiết bị đơn giản
+                const deviceId = data.deviceId;
+                if (typeof deviceId === "string" || typeof deviceId === "string") {
+                    ws.isAuthenticated = true;
+                    ws.isDevice = true;
+                    ws.deviceId = deviceId;
+                    console.log(`⚡ Thiết bị ${deviceId} đã kết nối WebSocket không cần JWT`);
+                    ws.send(JSON.stringify({ type: "auth_success", message: "Thiết bị xác thực thành công" }));
+                } else {
+                    ws.send(JSON.stringify({ type: "auth_error", message: "deviceId không hợp lệ" }));
+                    ws.close();
+                }
+                return;
+            }
+
 
             if (!ws.isAuthenticated) {
                 ws.send(JSON.stringify({ type: "auth_error", message: "Bạn chưa xác thực!" }));
