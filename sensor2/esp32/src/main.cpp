@@ -227,7 +227,7 @@
   void setup() {
     Serial.begin(115200);
     Wire.begin(19, 21); // OLED
-
+    initRTC();
     initDisplay();
     initFlameSensor();
     initLedBuzzer();

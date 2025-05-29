@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 const axios = require("axios");
 require("dotenv").config();
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
-
+require("./utils/dailydata"); 
 // Khởi tạo Express app
 const app = express();
 app.use(express.json());
@@ -282,6 +282,42 @@ const sendData = async () => {
     }
 };
 
+const SensorDataRaw = require("./models/sensordata_raw");
+
+const saveRawSensorData = async () => {
+    try {
+        const users = await User.find().select("userId devices");
+
+        for (const user of users) {
+            for (const deviceId of user.devices) {
+                const data = latestSensorDataMap.get(deviceId);
+
+                if (!data) continue;
+
+                // 👇 Cập nhật các trường bạn có, ví dụ bạn cần thêm nhiệt độ và độ ẩm
+                const { smokeLevel, flame } = data;
+                const temperature = data.temperature ?? 0;
+                const humidity = data.humidity ?? 0;
+
+                const rawEntry = new SensorDataRaw({
+                    userId: user.userId,
+                    deviceId,
+                    temperature,
+                    humidity,
+                    smokeLevel,
+                    flameDetected: flame
+                });
+
+                await rawEntry.save();
+            }
+        }
+
+        console.log("✅ Đã lưu dữ liệu sensor raw vào MongoDB");
+    } catch (err) {
+        console.error("❌ Lỗi khi lưu sensor raw:", err);
+    }
+};
+setInterval(saveRawSensorData, 5 * 60 * 1000); // mỗi 5 phút
 // Chạy liên tục để gửi cảnh báo (tuỳ chỉnh tần suất)
 setInterval(sendData, 5000);
 // 🚀 Khởi động HTTP + WebSocket Server

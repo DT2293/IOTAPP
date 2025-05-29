@@ -90,7 +90,6 @@ void stopAlert() {
   digitalWrite(GREEN_LED, HIGH);
 }
 
-// 🟡 Khi cảm biến không hoạt động
 void noSignalAlert() {
   digitalWrite(BUZZER_PIN, LOW);
   digitalWrite(RED_LED, LOW);

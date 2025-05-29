@@ -9,7 +9,7 @@
 extern Adafruit_SSD1306 display;
 
 unsigned long lastDisplayUpdate = 0;
-
+DateTime now;
 void initDisplay() {
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("Không tìm thấy màn hình OLED!");
@@ -27,17 +27,18 @@ void initDisplay() {
 
 void updateDisplay(bool isFlame) {
   unsigned long currentMillis = millis();
+  now = getCurrentTime();
   if (currentMillis - lastDisplayUpdate >= DISPLAY_INTERVAL) {
     lastDisplayUpdate = currentMillis;
 
     display.clearDisplay();
     display.setCursor(0, 0);
     display.print("Time: ");
-  //  display.printf("%02d:%02d:%02d", now.hour(), now.minute(), now.second());
+    display.printf("%02d:%02d:%02d", now.hour(), now.minute(), now.second());
 
     display.setCursor(0, 10);
-  //  display.print("Date: ");
- //   display.printf("%02d/%02d/%04d", now.day(), now.month(), now.year());
+    display.print("Date: ");
+    display.printf("%02d/%02d/%04d", now.day(), now.month(), now.year());
 
     if (isFlame) {
       display.setCursor(0, 25);
