@@ -252,7 +252,7 @@
       display.print("IP: ");
       display.println(WiFi.localIP());
 
-      wsClient.onEvent(onWsEvent);        // Đăng ký event callback
+      wsClient.onEvent(onWsEvent);        // Đăng ký event callback 
       wsClient.onMessage(onMessageCallback); // Đăng ký message callback
 
       wsClient.connect("ws://dungtc.iothings.vn:3000");
@@ -338,7 +338,7 @@
 
       int analogGasVal, digitalGasVal;
       readMQSensor(analogGasVal, digitalGasVal);
-      bool gasLeaked = (analogGasVal > 300 || digitalGasVal == HIGH);
+      bool gasLeaked = (analogGasVal > 300 || digitalGasVal == LOW);
       int analogFlameVal, digitalFlameVal;
       bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
       // Serial.printf("⚙️ Trạng thái còi: %s\n", alarmEnabled ? "BẬT" : "TẮT");

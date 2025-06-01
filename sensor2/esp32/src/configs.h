@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define MQ_ANALOG_PIN 35
+#define MQ_ANALOG_PIN 33
 #define MQ_DIGITAL_PIN 13
 
 // Pin definitions

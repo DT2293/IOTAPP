@@ -11,4 +11,5 @@ void initMQSensor() {
 void readMQSensor(int& analogValue, int& digitalValue) {
   analogValue = analogRead(MQ_ANALOG_PIN);
   digitalValue = digitalRead(MQ_DIGITAL_PIN);
+  printf("MQ Sensor - Analog: %d, Digital: %d\n", analogValue, digitalValue);
 }
