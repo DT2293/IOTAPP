@@ -6,7 +6,7 @@ class DeviceService {
 
   DeviceService()
       : _dio = Dio(
-          BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api'),
+          BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api'),
         ) {
     _dio.interceptors.add(
       InterceptorsWrapper(

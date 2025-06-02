@@ -15,7 +15,7 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
 
     return PopupMenuButton<Locale>(
       icon: const Icon(Icons.language),
-      tooltip: tr("change_language"), // Nếu bạn có key "change_language" trong JSON
+      tooltip: tr("change_language"), 
       onSelected: (locale) {
         context.setLocale(locale);
       },

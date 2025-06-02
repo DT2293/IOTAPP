@@ -111,7 +111,8 @@ class WebSocketProvider with ChangeNotifier {
     _token = token;
     _deviceId = deviceId;
 
-    _channel = WebSocketChannel.connect(Uri.parse("ws://dungtc.iothings.vn:3000"));
+  //_channel = WebSocketChannel.connect(Uri.parse("wss://dungtc.iothings.vn:3000"));
+    _channel = WebSocketChannel.connect(Uri.parse("wss://dungtc.iothings.vn/ws/"));
 
     _channel!.sink.add(jsonEncode({
       "type": "authenticate",

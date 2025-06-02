@@ -18,7 +18,7 @@ class FCMService {
 
     try {
       final response = await _dio.post(
-        'http://dungtc.iothings.vn/api/fcm-token',
+        'https://dungtc.iothings.vn/api/fcm-token',
         data: {'fcmToken': fcmToken},
         options: Options(headers: {
           'Authorization': 'Bearer $token',

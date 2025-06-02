@@ -6,7 +6,7 @@ class SensorService {
  // final String baseUrl = 'http://dungtc.iothings.vn/api/data';
  SensorService()
     : _dio = Dio(
-        BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/data'),
+        BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api/data'),
       ) {
     _dio.interceptors.add(
       InterceptorsWrapper(

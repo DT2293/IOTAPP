@@ -10,7 +10,7 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
 final FirebaseMessaging _fcm = FirebaseMessaging.instance;
- final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
+ final Dio _dio = Dio(BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api/auth'));
  // final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
   final FCMService fcmService = FCMService();
 
