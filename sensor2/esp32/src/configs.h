@@ -3,7 +3,7 @@
 
 #define MQ_ANALOG_PIN 33
 #define MQ_DIGITAL_PIN 13
-
+//#define DHT22 4
 // Pin definitions
 #define BUZZER_PIN     15
 #define FLAME_SENSOR_PIN 34
