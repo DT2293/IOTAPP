@@ -56,7 +56,7 @@ import 'package:shared_preferences/shared_preferences.dart';
             if (data.isNotEmpty) {
             deviceWithData = device;
             dataForDevice = data;
-            break; // Dừng khi tìm được device có data
+            break; 
             }
         }
 

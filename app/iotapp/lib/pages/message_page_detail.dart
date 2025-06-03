@@ -62,7 +62,6 @@ class MessagePageDetail extends StatelessWidget {
 }
 
 
- // Dùng regex để parse số
     // final RegExp tempRegex = RegExp(r'Nhiệt độ\s*:\s*(\d+(\.\d+)?)');
     // final RegExp smokeRegex = RegExp(r'Khói\s*:\s*(\d+)');
 

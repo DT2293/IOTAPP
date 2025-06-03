@@ -39,23 +39,23 @@ class _AddDevicePageState extends State<AddDevicePage> {
     try {
       await _deviceService.addDevice(newDevice);
 
-      final deviceListProvider = Provider.of<DeviceListProvider>(context, listen: false);
-      deviceListProvider.setDevices([
-        ...deviceListProvider.devices,
-        newDevice,
-      ]);
+      final deviceListProvider = Provider.of<DeviceListProvider>(
+        context,
+        listen: false,
+      );
+      deviceListProvider.setDevices([...deviceListProvider.devices, newDevice]);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('add_device_success'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('add_device_success'))));
 
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ ${tr('add_device_fail')}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('❌ ${tr('add_device_fail')}')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -74,45 +74,51 @@ class _AddDevicePageState extends State<AddDevicePage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(tr('add_device')),
-      ),
+      appBar: AppBar(title: Text(tr('add_device'))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-           TextFormField(
-  controller: _deviceIdController,
-  decoration: InputDecoration(
-    labelText: tr('device_id'),
-    prefixIcon: GestureDetector(
-      onTap: () async {
-        // Điều hướng sang trang QRScanPage và nhận dữ liệu trả về
-        final scannedId = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => QRScanPage(onScanned: (code) {
-            Navigator.pop(context, code);
-          })),
-        );
-        if (scannedId != null && scannedId is String) {
-          _deviceIdController.text = scannedId;
-        }
-      },
-      child: const Icon(Icons.qr_code),
-    ),
-    border: const OutlineInputBorder(),
-  ),
-  validator: (value) =>
-      value == null || value.isEmpty ? tr('please_enter_device_id') : null,
-),
-
+                  TextFormField(
+                    controller: _deviceIdController,
+                    decoration: InputDecoration(
+                      labelText: tr('device_id'),
+                      prefixIcon: GestureDetector(
+                        onTap: () async {
+                          final scannedId = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => QRScanPage(
+                                    onScanned: (code) {
+                                      Navigator.pop(context, code);
+                                    },
+                                  ),
+                            ),
+                          );
+                          if (scannedId != null && scannedId is String) {
+                            _deviceIdController.text = scannedId;
+                          }
+                        },
+                        child: const Icon(Icons.qr_code),
+                      ),
+                      border: const OutlineInputBorder(),
+                    ),
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? tr('please_enter_device_id')
+                                : null,
+                  ),
 
                   const SizedBox(height: 16),
                   TextFormField(
@@ -122,8 +128,11 @@ class _AddDevicePageState extends State<AddDevicePage> {
                       prefixIcon: const Icon(Icons.devices),
                       border: const OutlineInputBorder(),
                     ),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? tr('please_enter_device_name') : null,
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? tr('please_enter_device_name')
+                                : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -133,8 +142,11 @@ class _AddDevicePageState extends State<AddDevicePage> {
                       prefixIcon: const Icon(Icons.location_on),
                       border: const OutlineInputBorder(),
                     ),
-                    validator: (value) =>
-                        value == null || value.isEmpty ? tr('please_enter_location') : null,
+                    validator:
+                        (value) =>
+                            value == null || value.isEmpty
+                                ? tr('please_enter_location')
+                                : null,
                   ),
                   const SizedBox(height: 16),
                   SwitchListTile(
@@ -157,19 +169,20 @@ class _AddDevicePageState extends State<AddDevicePage> {
                       ),
                       onPressed: _isLoading ? null : _addDevice,
                       icon: const Icon(Icons.add),
-                      label: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      label:
+                          _isLoading
+                              ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Text(
+                                tr('add_device_button'),
+                                style: const TextStyle(fontSize: 16),
                               ),
-                            )
-                          : Text(
-                              tr('add_device_button'),
-                              style: const TextStyle(fontSize: 16),
-                            ),
                     ),
                   ),
                 ],

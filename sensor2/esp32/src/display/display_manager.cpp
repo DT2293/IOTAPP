@@ -1,4 +1,3 @@
-// display_manager.cpp
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <configs.h>
@@ -13,7 +12,7 @@ DateTime now;
 void initDisplay() {
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("Không tìm thấy màn hình OLED!");
-    while (true);  // Dừng chương trình nếu không có màn hình
+    while (true);  
   }
 
   display.clearDisplay();
@@ -39,7 +38,8 @@ void updateDisplay(bool isFlame) {
     display.setCursor(0, 10);
     display.print("Date: ");
     display.printf("%02d/%02d/%04d", now.day(), now.month(), now.year());
-
+  //  display.print("deviceId: ");
+  //  display.println(deviceId);
     if (isFlame) {
       display.setCursor(0, 25);
       display.setTextSize(2);

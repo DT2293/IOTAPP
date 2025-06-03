@@ -81,8 +81,7 @@ router.post("/", authMiddleware, async (req, res) => {
     }
 });
 
-// Lấy thông tin thiết bị theo deviceId
-// Lấy thông tin thiết bị theo deviceId
+
 router.get("/:deviceId", authMiddleware, async (req, res) => {
     try {
         const deviceId = req.params.deviceId;  // giữ nguyên string

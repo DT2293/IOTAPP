@@ -38,7 +38,6 @@ Future<void> main() async {
     ),
   );
 
-  // Gọi FCM sau khi runApp để đảm bảo context đã sẵn sàng
   await Future.delayed(const Duration(milliseconds: 300));
   await FCMInitializer().init();
 }

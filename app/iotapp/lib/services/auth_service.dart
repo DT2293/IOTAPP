@@ -54,9 +54,9 @@ Future<String?> login(String usernameOrEmail, String password) async {
       }
 
       // Khởi tạo FCM listener
-      await FCMInitializer().init(); // Gọi init với userId
+      await FCMInitializer().init(); 
 
-      return null; // ✅ Thành công
+      return null; 
     }
 
     // Nếu login lỗi (401 hoặc khác)

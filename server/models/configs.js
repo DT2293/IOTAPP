@@ -12,7 +12,7 @@ async function generateId(modelName) {
     let result = await Config.findOne({ _id: modelName });
 
     if (!result) {
-        console.log(`Initializing counter for ${modelName}...`); // 🛠 Debug
+     //   console.log(`Initializing counter for ${modelName}...`); 
         result = await Config.create({ _id: modelName, count: 0 });
     }
 

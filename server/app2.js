@@ -12,7 +12,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 function generateRecords(deviceId, userId, count, flameCount) {
     const records = [];
-    const startDate = new Date('2025-05-01');
+    const startDate = new Date('2025-05-23');
 
     for (let i = 0; i < count; i++) {
         const date = new Date(startDate);
@@ -40,8 +40,8 @@ async function run() {
         await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
         const records = [
-            ...generateRecords('24:0A:C4:00:01:10', 1, 22, 2), 
-            ...generateRecords('40:22:D8:05:1B:88', 2, 22, 3), 
+            ...generateRecords('24:0A:C4:00:01:10', 1, 11, 0), 
+            ...generateRecords('40:22:D8:05:1B:88', 2, 11, 0), 
         ];
 
         await SensorData.insertMany(records);

@@ -95,7 +95,7 @@ class WebSocketProvider with ChangeNotifier {
   bool _isConnected = false;
   bool _isAuthorized = false;
   bool _relayState = false;
-  bool _alarmOn = false; // 🔔 Trạng thái còi
+  bool _alarmOn = false; 
 
   String? _deviceId;
   String? _token;
@@ -162,10 +162,10 @@ class WebSocketProvider with ChangeNotifier {
   final command = {
     "type": "alarm_command",
     "command": turnOn ? "alarm_on" : "alarm_off",
-    "deviceId": _deviceId, // 👉 thêm dòng này!
+    "deviceId": _deviceId, 
   };
 
-  print("📤 Gửi alarm command: $command"); // ✅ Log kiểm tra
+  print("📤 Gửi alarm command: $command"); 
 
   _channel?.sink.add(jsonEncode(command));
 

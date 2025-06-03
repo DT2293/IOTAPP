@@ -48,7 +48,7 @@ const router = express.Router();
 const User = require("../models/user");
 const authMiddleware = require("../utils/authMiddleware");
 
-// ✅ Thêm FCM token vào mảng (nếu chưa có)
+
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -79,7 +79,6 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Lấy danh sách FCM token
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];

@@ -355,7 +355,7 @@
         }
         else
         {
-          stopAlert(); // Tắt còi nhưng có thể vẫn báo đèn hoặc tín hiệu khác
+          stopAlert(); 
         }
         // startAlert();
       }

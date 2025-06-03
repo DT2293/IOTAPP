@@ -16,9 +16,9 @@ router.post("/register", async (req, res) => {
 
         email = email.toLowerCase().trim();
         username = username.toLowerCase().trim();
-        phonenumber = phonenumber.trim();  // 🔹 Sửa phonenumber không cần chuyển thành lowercase
+        phonenumber = phonenumber.trim();  
 
-        const existingUser = await User.findOne({ $or: [{ email }, { username }, { phonenumber }] }); // 🔹 Kiểm tra phonenumber đã tồn tại
+        const existingUser = await User.findOne({ $or: [{ email }, { username }, { phonenumber }] }); 
         if (existingUser) {
             return res.status(400).json({
                 error: existingUser.email === email ? "Email đã được sử dụng!" : 
@@ -45,19 +45,17 @@ router.get("/devices/:userId", authMiddleware, async (req, res) => {
   try {
     const userId = Number(req.params.userId);
 
-    // Kiểm tra userId trong token có giống userId truy vấn không để bảo mật
     if (userId !== req.user.userId) {
       return res.status(403).json({ error: "Bạn không có quyền truy cập thiết bị của user khác!" });
     }
 
-    // Tìm user và populate devices
+
     const user = await User.findOne({ userId }).populate('devices').exec();
 
     if (!user) {
       return res.status(404).json({ error: "Không tìm thấy người dùng!" });
     }
 
-    // Trả về mảng devices đã populate
     return res.json({ devices: user.devices });
   } catch (error) {
     console.error("Lỗi khi lấy danh sách thiết bị:", error);
@@ -106,8 +104,7 @@ router.put("/update/:userId", authMiddleware, async (req, res) => {
             }
             user.email = email.toLowerCase().trim();
         }
-        if (phonenumber) user.phonenumber = phonenumber.trim(); // 🔹 Cập nhật phonenumber
-
+        if (phonenumber) user.phonenumber = phonenumber.trim(); 
         await user.save();
         res.json({ message: "Cập nhật thành công!", user });
     } catch (error) {
@@ -121,7 +118,7 @@ router.put("/update/:userId", authMiddleware, async (req, res) => {
 router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
     try {
         const { oldPassword, newPassword } = req.body;
-        const userId = Number(req.params.userId); // 🔹 Chuyển userId về kiểu số nếu cần
+        const userId = Number(req.params.userId); 
 
         if (userId !== req.user.userId) {
             return res.status(403).json({ error: "Bạn không có quyền đổi mật khẩu!" });
@@ -133,7 +130,7 @@ router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
         const isMatch = await bcrypt.compare(oldPassword, user.password);
         if (!isMatch) return res.status(400).json({ error: "Mật khẩu cũ không đúng!" });
 
-        // 🔹 Kiểm tra độ dài mật khẩu mới
+      
         if (newPassword.length < 6) {
             return res.status(400).json({ error: "Mật khẩu mới phải có ít nhất 6 ký tự!" });
         }
@@ -149,7 +146,7 @@ router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
 });
 
 
-// 📌 Lấy thông tin người dùng kèm thiết bị (✅ Fix lỗi populate)
+// Lấy thông tin người dùng kèm thiết bị (✅ Fix lỗi populate)
 // router.get("/users/:userId", authMiddleware, async (req, res) => {
 //     try {
 //         const { userId } = req.params;
@@ -240,12 +237,10 @@ router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Đảm bảo trường `phonenumber` tồn tại là array
     if (!Array.isArray(user.phonenumber)) {
       user.phonenumber = [];
     }
 
-    // Thêm số điện thoại
     user.phonenumber.push(newPhone);
     await user.save();
 
@@ -260,11 +255,6 @@ router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
   }
 });
 
-  
-
-
-
-// 🔹 Cấu hình dịch vụ gửi email
 const transporter = nodemailer.createTransport({
     service: "gmail",  // Gmail service
     auth: {
@@ -357,31 +347,25 @@ router.post("/logout", (req, res) => {
 
 router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
   try {
-    // Lấy userId từ tham số URL
+
     const { userId } = req.params;
 
-    // Lấy số điện thoại từ body request
     const { newPhone } = req.body;
 
-    // Kiểm tra xem số điện thoại có hợp lệ không
     if (!newPhone || newPhone.trim() === "") {
       return res.status(400).send({ message: "Phone number is required" });
     }
 
-    // Tìm người dùng trong cơ sở dữ liệu
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
 
-    // Thêm số điện thoại vào mảng phonenumber
     user.phonenumber.push(newPhone);
 
-    // Lưu lại thay đổi trong cơ sở dữ liệu
     await user.save();
 
-    // Trả về kết quả sau khi thêm thành công
     res.send({
       message: "Phone number added",
       phonenumber: user.phonenumber,
@@ -391,7 +375,5 @@ router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
     res.status(500).send({ message: "Error updating phone number" });
   }
 });
-
-
 
 module.exports = router;

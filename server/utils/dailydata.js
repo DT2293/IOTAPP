@@ -47,7 +47,6 @@ async function deleteOldRawData() {
     await SensorDataRaw.deleteMany({ timestamp: { $lt: cutoff } });
 }
 
-// Lên lịch chạy lúc 00:05 mỗi ngày
 cron.schedule('5 0 * * *', async () => {
     console.log("⏰ Bắt đầu tính trung bình dữ liệu ngày hôm qua và xóa dữ liệu cũ...");
     await calculateDailyAverage();
