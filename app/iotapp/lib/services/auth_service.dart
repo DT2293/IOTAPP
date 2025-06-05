@@ -374,36 +374,3 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
 }
 }
 
-
-//  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://dungtc.iothings.vn/api/auth'));
- //  String? userId = await getUserId();
-// Future<String?> login(String usernameOrEmail, String password) async {
-//     try {
-//       // Gửi request đến API với cả username hoặc email
-//       Response response = await _dio.post('/login', data: {
-//         "username": usernameOrEmail,
-//         "email": usernameOrEmail,
-//         "password": password,
-//       });
-
-//       if (response.statusCode == 200) {
-//         // Lưu thông tin người dùng và token vào SharedPreferences
-//         SharedPreferences prefs = await SharedPreferences.getInstance();
-//         String token = response.data['token'];
-//         await prefs.setString('token', token);
-//         await prefs.setString('user', jsonEncode(response.data['user']));
-
-//         return null;  // Trả về null nếu đăng nhập thành công
-//       } else {
-//         return response.data['error'] ?? 'Đăng nhập thất bại!';
-//       }
-//     } on DioException catch (e) {
-//       // Nếu có lỗi từ server hoặc API
-//       if (e.response != null) {
-//         return e.response?.data["error"] ?? "Lỗi khi kết nối tới server!";
-//       }
-//       return "Lỗi kết nối mạng!";
-//     } catch (e) {
-//       return "Lỗi không xác định: $e";
-//     }
-//   }

@@ -110,6 +110,8 @@
   "please_enter_device_name": "Please enter device name",
   "please_enter_location": "Please enter location",
   "edit_device": "Edit Device",
-  "alarm": "Alert"
+  "alarm": "Alert",
+  "fire_alert_title": "🚨 Fire Alert!",
+  "fire_alert_body": "🔥 Device {deviceId} has detected a fire!"
 
 }

@@ -130,5 +130,8 @@
   "please_enter_device_id": "Vui lòng nhập mã thiết bị",
   "please_enter_device_name": "Vui lòng nhập tên thiết bị",
   "please_enter_location": "Vui lòng nhập vị trí",
-  "alarm": "Cảnh báo"
+  "alarm": "Cảnh báo",
+  "fire_alert_title": "🚨 Cảnh báo cháy!",
+  "fire_alert_body": "🔥 Thiết bị {deviceId} phát hiện cháy!"
+
 }
