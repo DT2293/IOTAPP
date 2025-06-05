@@ -343,6 +343,18 @@ router.post("/logout", (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
     res.json({ message: "Đăng xuất thành công!" });
 });
+// routes/user.js
+router.post('/update-language', authMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  const { language } = req.body;
+
+  if (!['vi', 'en'].includes(language)) {
+    return res.status(400).json({ error: 'Ngôn ngữ không hợp lệ' });
+  }
+
+  await User.findByIdAndUpdate(userId, { language });
+  res.json({ success: true });
+});
 
 
 router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {

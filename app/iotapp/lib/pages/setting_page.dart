@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:iotapp/pages/login_page.dart';
@@ -6,7 +7,7 @@ import 'package:iotapp/services/auth_service.dart';
 import 'package:iotapp/services/language_service.dart';
 import 'package:iotapp/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class SettingPage extends StatefulWidget {
   @override
   _SettingPageState createState() => _SettingPageState();
@@ -29,6 +30,7 @@ class _SettingPageState extends State<SettingPage> {
       MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
+
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -69,11 +71,16 @@ class _SettingPageState extends State<SettingPage> {
                   trailing: DropdownButtonHideUnderline(
                     child: DropdownButton<Locale>(
                       value: currentLocale,
+                      // onChanged: (Locale? locale) {
+                      //   if (locale != null) {
+                      //     LanguageService.changeLanguage(context, locale);
+                      //   }
+                      // },
                       onChanged: (Locale? locale) {
-                        if (locale != null) {
-                          LanguageService.changeLanguage(context, locale);
-                        }
-                      },
+  if (locale != null) {
+    LanguageService.changeLanguage(context, locale);
+  }
+},                   
                       items: [
                         DropdownMenuItem(
                           value: Locale('en', 'US'),
