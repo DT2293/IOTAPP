@@ -345,17 +345,25 @@ router.post("/logout", (req, res) => {
 });
 // routes/user.js
 router.post('/update-language', authMiddleware, async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user.id; // là số
   const { language } = req.body;
 
   if (!['vi', 'en'].includes(language)) {
     return res.status(400).json({ error: 'Ngôn ngữ không hợp lệ' });
   }
 
-  await User.findByIdAndUpdate(userId, { language });
-  res.json({ success: true });
-});
+  const updatedUser = await User.findOneAndUpdate(
+    { userId },
+    { language },
+    { new: true } // để trả về bản ghi sau cập nhật
+  );
 
+  if (!updatedUser) {
+    return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+  }
+
+  res.json({ success: true, language: updatedUser.language });
+});
 
 router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
   try {
