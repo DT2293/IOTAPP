@@ -85,9 +85,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     message.notification?.title ?? '🔥 Cảnh báo',
     message.notification?.body ?? '',
     platformDetails,
-  );
-
-
-  
+  ); 
 }
 }

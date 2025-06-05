@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     devices: [{ type: String, ref: "devices" }], 
     fcmToken: [{ type: String }],
-    
+    language: { type: String, enum: ["vi", "en"], default: "vi" }, 
 });
 
 // ✅ Kiểm tra kỹ lưỡng userId
