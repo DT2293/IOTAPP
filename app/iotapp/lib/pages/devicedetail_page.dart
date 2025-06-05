@@ -13,7 +13,7 @@ class DeviceDetailPage extends StatefulWidget {
   _DeviceDetailPageState createState() => _DeviceDetailPageState();
 }
 
-bool isAlarmOn = false;
+bool isAlarmOn = true;
 
 class _DeviceDetailPageState extends State<DeviceDetailPage> {
   @override
@@ -49,17 +49,19 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // _buildSensorCard(
-                    //   tr("temperature"),
-                    //   "${wsProvider.deviceData['temperature']}°C",
-                    //   Colors.orange,
-                    // ),
-                    // SizedBox(height: 16),
-                    // _buildSensorCard(
-                    //   tr("humidity"),
-                    //   "${wsProvider.deviceData['humidity']}%",
-                    //   Colors.blue,
-                    // ),
+                   _buildSensorCard(
+                      tr("temperature"),
+                     // "${wsProvider.deviceData['temperature']}°C ",
+                     "${wsProvider.deviceData['temperature'] ?? 0}°C",
+                      Colors.orange,
+                    ),
+                    SizedBox(height: 16),
+                    _buildSensorCard(
+                      tr("humidity"),
+                     // "${wsProvider.deviceData['humidity']}%",
+                      "${wsProvider.deviceData['humidity'] ?? 0}°C",
+                      Colors.blue,
+                    ),
                     SizedBox(height: 16),
                     _buildSensorCard(
                       tr("smoke_level"),
@@ -67,14 +69,21 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                       Colors.red,
                       isDanger: true,
                     ),
+//                      SizedBox(height: 16),
+//                     _buildSensorCard(
+//   tr("fire_detected"),
+//   wsProvider.deviceData['flameDetected'] == true ? tr("yes") : tr("no"),
+//   Colors.deepOrange,
+//   isDanger: wsProvider.deviceData['flameDetected'] == true,
+// ),
                     Spacer(),
 
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          "Còi báo",
-                          style: TextStyle(
+                        Text(
+                          tr("alarm"),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),

@@ -45,4 +45,4 @@ async function sendNotificationToDevice(fcmToken, title, body, data = {}) {
   }
 }
 
-module.exports = { sendNotificationToDevice };  // Chỉ xuất một lần
+module.exports = { sendNotificationToDevice };  

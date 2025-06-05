@@ -121,7 +121,7 @@ class WebSocketProvider with ChangeNotifier {
 
     _channel!.stream.listen((message) {
       final data = jsonDecode(message);
-
+      print("📥 Nhận dữ liệu từ WebSocket: $data");
       if (data['type'] == "auth_success") {
         _isConnected = true;
         _isAuthorized = true;

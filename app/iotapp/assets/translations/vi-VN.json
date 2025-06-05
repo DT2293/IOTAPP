@@ -129,5 +129,6 @@
   "add_device_fail": "Thêm thiết bị thất bại",
   "please_enter_device_id": "Vui lòng nhập mã thiết bị",
   "please_enter_device_name": "Vui lòng nhập tên thiết bị",
-  "please_enter_location": "Vui lòng nhập vị trí"
+  "please_enter_location": "Vui lòng nhập vị trí",
+  "alarm": "Cảnh báo"
 }
