@@ -345,7 +345,7 @@ router.post("/logout", (req, res) => {
 });
 // routes/user.js
 router.post('/update-language', authMiddleware, async (req, res) => {
-  const userId = req.user.id; // là số
+  const userId = req.user.userId; // là số
   const { language } = req.body;
 
   if (!['vi', 'en'].includes(language)) {
