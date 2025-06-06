@@ -101,7 +101,7 @@
   "location_required": "Location is required",
   "add_device": "Add Device",
   "device_id": "Device ID",
-  "device_name": "Device Name",
+  "device_name": "Device Name", 
   "active": "Activate Device",
   "add_device_button": "Add Device",
   "add_device_success": "Device added successfully!",
