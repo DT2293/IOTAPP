@@ -353,11 +353,6 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     return [];
   }
 
-  // Future<void> logout() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   await prefs.remove('token');
-  //   await prefs.remove('user');
-  // }
   Future<void> logout() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -368,9 +363,6 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
   // Xóa token FCM (huỷ đăng ký nhận notification)
   await _fcm.deleteToken();
 
-  // Nếu bạn có đăng ký topic userId, huỷ đăng ký ở đây
-  // final userId = ... lấy userId từ prefs hoặc biến lưu trữ
-  // await _fcm.unsubscribeFromTopic('user_$userId');
 }
 }
 
