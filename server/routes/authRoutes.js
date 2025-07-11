@@ -145,21 +145,6 @@ router.put("/updatepassword/:userId", authMiddleware, async (req, res) => {
     }
 });
 
-
-// Lấy thông tin người dùng kèm thiết bị (✅ Fix lỗi populate)
-// router.get("/users/:userId", authMiddleware, async (req, res) => {
-//     try {
-//         const { userId } = req.params;
-//         const user = await User.findOne({ userId }).populate("devices");
-
-//         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
-
-//         res.json(user);
-//     } catch (error) {
-//         console.error("Lỗi lấy thông tin người dùng:", error);
-//         res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng" });
-//     }
-// });
 router.get("/users/:userId", authMiddleware, async (req, res) => {
     try {
         const { userId } = req.params;
@@ -178,26 +163,6 @@ router.get("/users/:userId", authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng" });
     }
 });
-
-
-// router.get("/profile", authMiddleware, async (req, res) => {
-//     try {
-//         let userId = req.user.userId;
-
-//         if (isNaN(userId)) {
-//             return res.status(400).json({ error: "userId không hợp lệ!" });
-//         }
-
-//         const user = await User.findOne({ userId }).select("-password");
-
-//         if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng!" });
-
-//         res.json(user);
-//     } catch (error) {
-//         console.error("Lỗi lấy thông tin user:", error);
-//         res.status(500).json({ error: "Lỗi khi lấy thông tin người dùng" });
-//     }
-// });
 
 router.get("/profile", authMiddleware, async (req, res) => {
     try {

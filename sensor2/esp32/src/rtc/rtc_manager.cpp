@@ -11,7 +11,7 @@ void initRTC() {
     Serial.println("Không tìm thấy DS3231!");
     while (1);
   }
-  rtc.adjust(DateTime(2025, 6, 06, 9, 46, 30)); // Chỉ chạy 1 lần nếu cần
+  rtc.adjust(DateTime(2025, 6, 06, 13, 29, 30)); // Chỉ chạy 1 lần nếu cần
 }
 
 DateTime getCurrentTime() {

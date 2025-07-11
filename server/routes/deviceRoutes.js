@@ -6,29 +6,6 @@ const User = require("../models/user");
 //const { generateId } = require("../models/configs"); // ✅ Thêm hàm generateId
 const authMiddleware = require("../utils/authMiddleware");
 
-//  Thêm thiết bị mới
-//const { generateId } = require("../models/configs"); 
-
-// const BLYNK_TOKEN = "u1Gt11heKkrE9p1mC7KyLJmxOVg4t9E6"; // Thay bằng token thật
-
-// // Lấy deviceId từ Blynk chân V4
-// const getDeviceIdFromBlynk = async () => {
-//     try {
-//         const response = await axios.get(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&pin=V4`);
-        
-//         if (!response.data) {
-//             console.error("⚠️ Không có dữ liệu từ Blynk!");
-//             return null;
-//         }
-
-//         const deviceId = response.data.toString(); // Đảm bảo dữ liệu là String
-//         //console.log(` Device ID từ Blynk (V4): ${deviceId}`);
-//         return deviceId;
-//     } catch (error) {
-//         console.error("Lỗi lấy deviceId từ Blynk:", error.message);
-//         return null;
-//     }
-// };
 
 
 router.get("/devices/:userId", authMiddleware, async (req, res) => {
@@ -60,10 +37,6 @@ router.post("/", authMiddleware, async (req, res) => {
 
         const user = await User.findOne({ userId });
         if (!user) return res.status(404).json({ error: "Không tìm thấy User" });
-    //  const deviceId = await getDeviceIdFromBlynk();
-    //    if (!deviceId) return res.status(500).json({ error: "Không lấy được deviceId từ Blynk" });
-
-        // Kiểm tra xem deviceId này đã tồn tại chưa
         const existingDevice = await Device.findOne({ deviceId });
         if (existingDevice) {
             return res.status(400).json({ error: "Thiết bị này đã được đăng ký!" });
