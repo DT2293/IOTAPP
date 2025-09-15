@@ -20,9 +20,7 @@ async function handleAlert(deviceId, sensorData) {
 
   for (const user of users) {
     const fcmTokens = user.fcmToken;
-    const language = user.language || "vi"; // Mặc định tiếng Việt nếu chưa lưu
-
-    // Lấy nội dung dịch phù hợp
+    const language = user.language || "vi";
     const localized = translations[language] || translations["vi"];
     const title = localized.title;
     const body = localized.body(deviceId, sensorData.smokeLevel);
@@ -35,7 +33,7 @@ async function handleAlert(deviceId, sensorData) {
         });
       }
     } else {
-      console.error(`❌ FCM token không hợp lệ cho user ${user.userId}`);
+      console.error(`FCM token không hợp lệ cho user ${user.userId}`);
     }
   }
 }

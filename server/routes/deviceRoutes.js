@@ -3,7 +3,6 @@ const express = require("express");
 const router = express.Router();
 const Device = require("../models/Device");
 const User = require("../models/user");
-//const { generateId } = require("../models/configs"); // ✅ Thêm hàm generateId
 const authMiddleware = require("../utils/authMiddleware");
 
 
@@ -12,12 +11,9 @@ router.get("/devices/:userId", authMiddleware, async (req, res) => {
   try {
     const userId = Number(req.params.userId);
 
-    // Bảo mật: kiểm tra token user có quyền lấy dữ liệu này
     if (userId !== req.user.userId) {
       return res.status(403).json({ error: "Bạn không có quyền truy cập thiết bị của user khác!" });
     }
-
-    // Lấy danh sách device của user từ bảng device
     const devices = await Device.find({ userId });
 
     return res.json({ devices });
@@ -27,9 +23,6 @@ router.get("/devices/:userId", authMiddleware, async (req, res) => {
   }
 });
 
-
-
-// API thêm thiết bị
 router.post("/", authMiddleware, async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -57,7 +50,7 @@ router.post("/", authMiddleware, async (req, res) => {
 
 router.get("/:deviceId", authMiddleware, async (req, res) => {
     try {
-        const deviceId = req.params.deviceId;  // giữ nguyên string
+        const deviceId = req.params.deviceId;  
         const device = await Device.findOne({ deviceId });
 
         if (!device) return res.status(404).json({ error: "Không tìm thấy thiết bị" });
@@ -71,10 +64,9 @@ router.get("/:deviceId", authMiddleware, async (req, res) => {
     }
 });
 
-// Cập nhật thiết bị theo deviceId
 router.put("/:deviceId", authMiddleware, async (req, res) => {
     try {
-        const deviceId = req.params.deviceId;  // giữ nguyên string
+        const deviceId = req.params.deviceId;  
         const { deviceName, location, active } = req.body;
 
         const existingDevice = await Device.findOne({ deviceId });
@@ -91,13 +83,10 @@ router.put("/:deviceId", authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Lỗi khi cập nhật thiết bị" });
     }
 });
-
-// Xóa thiết bị theo deviceId
 router.delete("/:deviceId", authMiddleware, async (req, res) => {
     try {
         const userId = req.user.userId;
-        const deviceId = req.params.deviceId;  // giữ nguyên string
-
+        const deviceId = req.params.deviceId;  
         const deletedDevice = await Device.findOneAndDelete({ deviceId, userId });
         if (!deletedDevice) return res.status(404).json({ error: "Không tìm thấy thiết bị của user này" });
 

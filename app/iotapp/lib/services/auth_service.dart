@@ -23,12 +23,10 @@ Future<String?> login(String usernameOrEmail, String password) async {
       '/login',
       data: {
         "username": usernameOrEmail,
-        "email": usernameOrEmail, // Có thể server chỉ dùng 1 trong 2
+        "email": usernameOrEmail,
         "password": password,
       },
     ).timeout(const Duration(seconds: 5));
-
-    print("[LOGIN] ✅ Status code: ${response.statusCode}");
 
     if (response.statusCode == 200) {
       final token = response.data['token'];
@@ -50,7 +48,6 @@ Future<String?> login(String usernameOrEmail, String password) async {
         FCMService fcmService = FCMService();
         await fcmService.addFcmToken(newFcmToken); // Thêm FCM token vào server
         await prefs.setString('fcmToken', newFcmToken);
-        print("🔁 FCM token đã được cập nhật");
       }
 
       // Khởi tạo FCM listener
@@ -64,9 +61,8 @@ Future<String?> login(String usernameOrEmail, String password) async {
   } on DioException catch (e) {
     return e.response?.data['error'] ?? 'Lỗi từ server';
   } on TimeoutException {
-    return '⏰ Server không phản hồi, vui lòng thử lại';
+    return 'Server không phản hồi, vui lòng thử lại';
   } catch (err) {
-    print("[LOGIN] ❌ Lỗi không xác định: $err");
     return 'Lỗi không xác định';
   }
 }
@@ -86,7 +82,6 @@ Future<bool> autoLogin() async {
     final savedFcmToken = prefs.getString('fcmToken');
 
     if (fcmToken != null && fcmToken != savedFcmToken) {
-      // Gọi FCMService để cập nhật FCM token lên server
       FCMService fcmService = FCMService();
       await fcmService.addFcmToken(fcmToken); // Cập nhật FCM token lên server
       await prefs.setString('fcmToken', fcmToken); // Lưu FCM token vào SharedPreferences
@@ -98,7 +93,7 @@ Future<bool> autoLogin() async {
     return true;
   }
 
-  return false; // Không có token hoặc userId trong SharedPreferences, trả về false
+  return false; 
 }
 
 
@@ -189,7 +184,6 @@ Future<bool> autoLogin() async {
       );
 
       if (response.statusCode == 200) {
-        print("✅ Đổi mật khẩu thành công: ${response.data['message']}");
         return null; // null nghĩa là thành công
       } else {
         return response.data['error'] ?? "Lỗi khi đổi mật khẩu!";
@@ -219,14 +213,12 @@ Future<bool> autoLogin() async {
       );
 
       if (response.statusCode == 201) {
-        return null; // Thành công, không có lỗi
+        return null;
       } else {
-        // Trả về thông báo lỗi nếu có
         return response.data["error"] ?? "Đăng ký thất bại!";
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        // Trả về thông báo lỗi chi tiết từ server nếu có
         return e.response?.data["error"] ?? "Đăng ký thất bại!";
       }
       // Trả về lỗi khi kết nối hoặc lỗi không xác định
@@ -241,7 +233,6 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     try {
 
       if (token == null) {
-        print("🚨 Chưa đăng nhập hoặc thiếu token");
         return false;
       }
       int? userId = await getUserId(); 
@@ -258,10 +249,9 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
         ),
       );
 
-      print("✅ Response: ${response.data}");
       return response.statusCode == 200;
     } on DioException catch (e) {
-      print("🚨 Lỗi thêm số điện thoại: ${e.response?.data ?? e.message}");
+      print("Lỗi thêm số điện thoại: ${e.response?.data ?? e.message}");
       return false;
     }
 }
@@ -269,13 +259,10 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     int? userId = await getUserId(); // 🔍 Lấy userId từ SharedPreferences
 
     if (userId == null) {
-      print("🚨 Không tìm thấy userId!");
       return false;
     }
 
     try {
-      print("🔑 Token: $token");
-      print("📌 userId: ${userId.toString()}");
 
       final response = await _dio.put(
         '/update/$userId',
@@ -292,12 +279,9 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
         ),
       );
 
-      print("Response Status: ${response.statusCode}");
-      print("Response Data: ${response.data}");
-
       return response.statusCode == 200;
     } on DioException catch (e) {
-      print("🚨 Lỗi update user: ${e.response?.data ?? e.message}");
+      print("Lỗi update user: ${e.response?.data ?? e.message}");
       return false;
     }
   }
@@ -307,17 +291,16 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
 
     String? token = prefs.getString('token'); // Lấy token từ SharedPreferences
     if (token == null) {
-      print("🚨 Không tìm thấy token!");
+      print(" Không tìm thấy token!");
       return null;
     }
 
     try {
       final jwt = JWT.decode(token);
       int? userId = jwt.payload['userId'] as int?; // Lấy userId kiểu int
-      print("📌 userId từ token: $userId");
       return userId;
     } catch (e) {
-      print("🚨 Lỗi decode JWT: $e");
+
       return null;
     }
   }
@@ -332,8 +315,7 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     String? userData = prefs.getString('user');
 
     print(
-        "Stored user data: $userData"); // ✅ Debug xem dữ liệu có lưu đúng không
-
+        "Stored user data: $userData"); 
     if (userData != null) {
       return jsonDecode(userData);
     }
@@ -347,7 +329,7 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     if (userData != null) {
       Map<String, dynamic> userMap = jsonDecode(userData);
       List<String> devices = List<String>.from(userMap['devices'] ?? []);
-      print("User devices: $devices"); // ✅ Debug danh sách thiết bị
+      print("User devices: $devices"); 
       return devices;
     }
     return [];

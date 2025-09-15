@@ -49,14 +49,14 @@
       } 
       else
       {
-        Serial.printf("❌ Gửi thất bại: %s\n", http.errorToString(httpResponseCode).c_str());
+        Serial.printf("Gửi thất bại: %s\n", http.errorToString(httpResponseCode).c_str());
       }
 
       http.end();
     }
     else
     {
-      Serial.println("❌ Không có WiFi!");
+      Serial.println("Không có WiFi!");
     }
   }
   void sendDeviceAuthenticate()
@@ -75,7 +75,7 @@
   void onMessageCallback(WebsocketsMessage message);
   void onWsEvent(WebsocketsEvent event, String data) {
     if (event == WebsocketsEvent::ConnectionOpened) {
-      Serial.println("✅ WebSocket đã kết nối, gửi xác thực...");
+      Serial.println("WebSocket đã kết nối, gửi xác thực...");
       sendDeviceAuthenticate();
     }
   }
@@ -109,8 +109,8 @@
       display.print("IP: ");
       display.println(WiFi.localIP());
 
-      wsClient.onEvent(onWsEvent);        // Đăng ký event callback 
-      wsClient.onMessage(onMessageCallback); // Đăng ký message callback
+      wsClient.onEvent(onWsEvent);        
+      wsClient.onMessage(onMessageCallback); 
 
       wsClient.connect("ws://dungtc.iothings.vn:3000");
 
@@ -157,7 +157,7 @@
       {
         alarmEnabled = false;
         stopAlert();
-        Serial.println("🔕 Còi báo bị tắt từ xa");
+        Serial.println("Còi báo bị tắt từ xa");
       }
       else if (strcmp(command, "alarm_on") == 0)
       {
@@ -183,15 +183,12 @@ bool dhtSuccess = readDhtSensor(temperature, humidity);
 
       int analogGasVal, digitalGasVal;
       readMQSensor(analogGasVal, digitalGasVal);
-
-     // sendDataToServer(analogGasVal, flameDetected);
      if (dhtSuccess) {
   sendDataToServer(analogGasVal, flameDetected, temperature, humidity);
 } else {
-  // Nếu muốn vẫn gửi không có dữ liệu DHT, thì dùng giá trị mặc định 0
+
   sendDataToServer(analogGasVal, flameDetected);
 }
-      //   Serial.printf("💨 %d | 🔥 %s\n", analogGasVal, flameDetected ? "Có lửa" : "Không");
 
       updateDisplay(flameDetected);
     }
@@ -205,7 +202,6 @@ bool dhtSuccess = readDhtSensor(temperature, humidity);
       bool gasLeaked = (analogGasVal > 300 || digitalGasVal == LOW);
       int analogFlameVal, digitalFlameVal;
       bool flameDetected = isFlameDetected(analogFlameVal, digitalFlameVal);
-      // Serial.printf("⚙️ Trạng thái còi: %s\n", alarmEnabled ? "BẬT" : "TẮT");
 
       if (analogGasVal > 4095 || analogGasVal < 0 || digitalGasVal == -1)
       {

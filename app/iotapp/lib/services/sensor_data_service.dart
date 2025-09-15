@@ -32,7 +32,7 @@ class SensorService {
       throw Exception('Failed to load sensor data');
     }
   } catch (e) {
-    print('❌ SensorService error: $e');
+    print('SensorService error: $e');
     rethrow;
   }
 }

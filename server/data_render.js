@@ -7,8 +7,8 @@ const uri = process.env.MONGO_URI;
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-}).then(() => console.log("✅ Kết nối MongoDB thành công!"))
-  .catch(err => console.error("❌ Lỗi kết nối MongoDB:", err));
+}).then(() => console.log("Kết nối MongoDB thành công!"))
+  .catch(err => console.error("Lỗi kết nối MongoDB:", err));
 
 function generateRecords(deviceId, userId, count, flameCount) {
     const records = [];
@@ -16,7 +16,7 @@ function generateRecords(deviceId, userId, count, flameCount) {
 
     for (let i = 0; i < count; i++) {
         const date = new Date(startDate);
-        date.setDate(date.getDate() + i); // Tăng từng ngày
+        date.setDate(date.getDate() + i); 
 
         const hasFlame = i < flameCount;
         const data = {
@@ -45,9 +45,8 @@ async function run() {
         ];
 
         await SensorData.insertMany(records);
-        console.log('✅  Bản ghi đã được lưu vào MongoDB.');
     } catch (error) {
-        console.error('❌ Lỗi:', error);
+        console.error('Lỗi:', error);
     } finally {
         await mongoose.disconnect();
     }

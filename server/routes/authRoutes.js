@@ -221,13 +221,13 @@ router.patch("/add-phone/:userId", authMiddleware, async (req, res) => {
 });
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",  // Gmail service
+    service: "gmail",  
     auth: {
-        user: process.env.SMTP_USER,  // Lấy user từ .env
-        pass: process.env.SMTP_PASS,  // Lấy pass từ .env
+        user: process.env.SMTP_USER,  
+        pass: process.env.SMTP_PASS,  
     },
 });
-const otpStore = new Map(); // In-memory store: email -> { otp, expiresAt }
+const otpStore = new Map(); 
 
 router.post("/forgot-password", async (req, res) => {
     try {
@@ -266,7 +266,6 @@ router.post("/forgot-password", async (req, res) => {
     }
 });
 
-// Route: /verify-otp
 router.post("/verify-otp", async (req, res) => {
     try {
         const { email, otp } = req.body;
@@ -276,13 +275,10 @@ router.post("/verify-otp", async (req, res) => {
             return res.status(400).json({ error: "OTP không hợp lệ hoặc đã hết hạn!" });
         }
 
-        // ✅ Tìm lại user
         const user = await User.findOne({ email: email.toLowerCase().trim() });
         if (!user) return res.status(404).json({ error: "Người dùng không tồn tại!" });
 
-        otpStore.delete(email); // Xóa OTP sau khi dùng
-
-        // ✅ Tạo tokenonPressed: otpController.text.trim().length == 6 ? _verifyOtp : null,
+        otpStore.delete(email); 
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
         res.json({ message: "Xác thực thành công!", token, user });
@@ -303,12 +299,10 @@ router.post('/reset-password', async (req, res) => {
 
     res.json({ message: 'Đặt lại mật khẩu thành công' });
 });
-// 📌 Đăng xuất
 router.post("/logout", (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "None" });
     res.json({ message: "Đăng xuất thành công!" });
 });
-// routes/user.js
 router.post('/update-language', authMiddleware, async (req, res) => {
   const userId = req.user.userId; // là số
   const { language } = req.body;
@@ -319,7 +313,7 @@ router.post('/update-language', authMiddleware, async (req, res) => {
 
   try {
     const updatedUser = await User.findOneAndUpdate(
-      { userId }, // tìm theo userId, KHÔNG phải _id
+      { userId }, 
       { language },
       { new: true }
     );
@@ -330,7 +324,7 @@ router.post('/update-language', authMiddleware, async (req, res) => {
 
     res.json({ success: true, language: updatedUser.language });
   } catch (err) {
-    console.error('❌ Server error:', err);
+    console.error('Server error:', err);
     res.status(500).json({ error: 'Lỗi server khi cập nhật ngôn ngữ' });
   }
 });

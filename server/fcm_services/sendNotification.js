@@ -1,6 +1,4 @@
 // sendNotification.js
-
-
 const admin = require("firebase-admin");
 
 if (!admin.apps.length) {
@@ -35,11 +33,8 @@ async function sendNotificationToDevice(fcmToken, title, body, data = {}) {
     },
   };
 
- // console.log("🔧 Message Object:", message);
-
   try {
     const response = await admin.messaging().send(message);
- //   console.log("✅ Gửi thông báo thành công:", response);
   } catch (error) {
     console.error("❌ Lỗi khi gửi thông báo:", error.message);
   }

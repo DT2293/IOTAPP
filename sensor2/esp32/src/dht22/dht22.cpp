@@ -14,17 +14,8 @@ void initDhtSensor() {
 bool readDhtSensor(float& temperature, float& humidity) {
   humidity = dht.readHumidity();
   temperature = dht.readTemperature();
-    // Serial.print("Độ ẩm: ");
-    // Serial.print(humidity);
-    // Serial.print("%, Nhiệt độ: ");
-    // Serial.print(temperature);
-    // Serial.println("°C");
   if (isnan(humidity) || isnan(temperature)) {
-   // Serial.println("❌ Lỗi đọc cảm biến DHT22!");
-    return false;  // Lỗi đọc
+    return false;  
   } 
-   // Gửi độ ẩm lên V1
-  delay(2000);  // Đợi 2 giây trước khi đọc lại
-  return true;
-    // Đọc thành công
+  delay(2000);  
 }

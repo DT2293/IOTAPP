@@ -2,11 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// class LanguageService {
-//   static void changeLanguage(BuildContext context, Locale locale) {
-//     EasyLocalization.of(context)?.setLocale(locale);
-//   }
-// }
 class LanguageService {
   static Future<void> changeLanguage(BuildContext context, Locale newLocale) async {
     context.setLocale(newLocale);
@@ -25,9 +20,9 @@ class LanguageService {
           'Authorization': 'Bearer $token',
         }),
       );
-      print("✅ Ngôn ngữ đã cập nhật lên server: $languageCode");
+      print("Ngôn ngữ đã cập nhật lên server: $languageCode");
     } catch (e) {
-      print("❌ Lỗi cập nhật ngôn ngữ: $e");
+      print("Lỗi cập nhật ngôn ngữ: $e");
     }
   }
 }

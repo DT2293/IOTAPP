@@ -36,8 +36,6 @@ const userSchema = new mongoose.Schema({
     fcmToken: [{ type: String }],
     language: { type: String, enum: ["vi", "en"], default: "vi" }, 
 });
-
-// ✅ Kiểm tra kỹ lưỡng userId
 userSchema.pre("save", async function (next) {
     if (!this.userId || typeof this.userId !== "number") {
         const newId = await generateId();

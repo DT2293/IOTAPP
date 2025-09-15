@@ -22,7 +22,6 @@ class DeviceService {
     );
   }
 
-  /// 🟢 Lấy tất cả thiết bị
 Future<List<Device>> getDevicesByUserId(int userId) async {
   try {
     final response = await _dio.get('/devices/devices/$userId');
@@ -32,25 +31,21 @@ Future<List<Device>> getDevicesByUserId(int userId) async {
 
     return data.map((e) => Device.fromJson(e)).toList();
   } catch (e) {
-    print('❌ Lỗi khi lấy danh sách thiết bị: $e');
+    print('Lỗi khi lấy danh sách thiết bị: $e');
     rethrow;
   }
 }
-
-
-  /// 🔍 Lấy thiết bị theo ID
-  Future<Device?> getDeviceById(String deviceId) async {
+Future<Device?> getDeviceById(String deviceId) async {
     try {
       final encodedId = Uri.encodeComponent(deviceId.trim());
       final response = await _dio.get('/devices/$encodedId');
       return Device.fromJson(response.data);
     } catch (e) {
-      print("❌ Lỗi khi lấy thông tin thiết bị: $e");
+      print("Lỗi khi lấy thông tin thiết bị: $e");
       return null;
     }
   }
 
-  /// ➕ Thêm thiết bị mới
   Future<Device> addDevice(Device device) async {
     try {
       final response = await _dio.post('/devices', data: device.toJson());
@@ -89,26 +84,3 @@ Future<List<Device>> getDevicesByUserId(int userId) async {
     }
   }
 }
-
-
-//   /// 🟢 Thêm thiết bị
-
-//   /// 🟢 Cập nhật thiết bị
-
-
-//   /// 🟢 Xóa thiết bị
-//  
-
-//   /// 🟢 Lấy danh sách tất cả thiết bị của user
-//   Future<List<Map<String, dynamic>>> getAllDevices() async {
-//     try {
-//       final response = await _dio.get('/devices');
-//       if (response.statusCode == 200) {
-//         return List<Map<String, dynamic>>.from(response.data['devices']);
-//       }
-//     } catch (e) {
-//       print("❌ Lỗi khi lấy danh sách thiết bị: $e");
-//     }
-//     return [];
-//   }
-// }

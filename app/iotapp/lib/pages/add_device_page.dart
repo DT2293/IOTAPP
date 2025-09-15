@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iotapp/pages/qrscan_page.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart'; // thêm dòng này
+import 'package:easy_localization/easy_localization.dart'; 
 import 'package:iotapp/models/device_model.dart';
 import 'package:iotapp/services/device_service.dart';
 import 'package:iotapp/theme/list_device_provider.dart';
@@ -55,7 +55,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('❌ ${tr('add_device_fail')}')));
+      ).showSnackBar(SnackBar(content: Text('${tr('add_device_fail')}')));
     } finally {
       setState(() => _isLoading = false);
     }

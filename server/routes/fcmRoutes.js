@@ -25,12 +25,12 @@ router.post("/", authMiddleware, async (req, res) => {
     if (!user.fcmToken.includes(newToken)) {
       user.fcmToken.push(newToken);
       await user.save();
-      return res.json({ message: "✅ Thêm FCM token thành công!" });
+      return res.json({ message: "Thêm FCM token thành công!" });
     }
 
     res.json({ message: "ℹ️ Token đã tồn tại, không cần thêm." });
   } catch (err) {
-    console.error("❌ Lỗi cập nhật FCM token:", err.message);
+    console.error("Lỗi cập nhật FCM token:", err.message);
     res.status(500).json({ message: "Lỗi server" });
   }
 });
@@ -45,7 +45,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
     res.json({ fcmToken: user.fcmToken || [] });
   } catch (err) {
-    console.error("❌ Lỗi lấy danh sách FCM token:", err.message);
+    console.error("Lỗi lấy danh sách FCM token:", err.message);
     res.status(500).json({ message: "Lỗi server" });
   }
 });

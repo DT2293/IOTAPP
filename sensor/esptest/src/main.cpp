@@ -6,12 +6,7 @@
 // #define BLYNK_TEMPLATE_NAME "dung2"
 // #define BLYNK_AUTH_TOKEN "y1uuRJfoya5d-4LuFATabTxi9gRegI0X"
 
-
-
-// #define BLYNK_TEMPLATE_ID "TMPL66YWsXpxC"
-// #define BLYNK_TEMPLATE_NAME "dung3"
-// #define BLYNK_AUTH_TOKEN "SjYxhIlL8EpEBq19k2WQaCWsvgtpXJv7"
-#include <Wire.h>
+s
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <DHT.h>
@@ -265,17 +260,17 @@ void handleAlarm(int smokeValue, float temperature, float rateOfRise) {
 
     // Serial & OLED hiển thị chi tiết
     if (smokeCritical && tempCritical) {
-        Serial.println("🔥 NGHIÊM TRỌNG! Khói & Nhiệt độ cao!");
+        Serial.println("NGHIÊM TRỌNG! Khói & Nhiệt độ cao!");
     } else if (smokeWarning && tempWarning) {
-        Serial.println("⚠️ Cảnh báo: Cả khói & nhiệt độ cảnh báo!");
+        Serial.println("Cảnh báo: Cả khói & nhiệt độ cảnh báo!");
     } else if (smokeWarning) {
-        Serial.println("💨 Mức khói cao!");
+        Serial.println("Mức khói cao!");
     } else if (tempWarning) {
-        Serial.println("🌡️ Nhiệt độ cao!");
+        Serial.println("Nhiệt độ cao!");
     } else if (rorDanger) {
-        Serial.println("🚀 Tăng nhiệt nhanh bất thường!");
+        Serial.println("Tăng nhiệt nhanh bất thường!");
     } else {
-        Serial.println("✅ Bình thường.");
+        Serial.println("Bình thường.");
         display.println("SAFE");
     }
 
@@ -288,7 +283,7 @@ BLYNK_WRITE(V0) {
     digitalWrite(RELAY_PIN, relayState);
     systemOn = relayState;  // Đồng bộ trạng thái hệ thống với Blynk
     digitalWrite(LED_GREEN, systemOn); 
-   // Serial.printf("🌐 Blynk -> Relay State: %s\n", relayState ? "ON" : "OFF");
+
 }   
 // Đồng bộ Device ID khi kết nối lại Blynk
 BLYNK_CONNECTED() {

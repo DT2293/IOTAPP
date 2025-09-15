@@ -60,13 +60,3 @@ class MessagePageDetail extends StatelessWidget {
     );
   }
 }
-
-
-    // final RegExp tempRegex = RegExp(r'Nhiệt độ\s*:\s*(\d+(\.\d+)?)');
-    // final RegExp smokeRegex = RegExp(r'Khói\s*:\s*(\d+)');
-
-    // final tempMatch = tempRegex.firstMatch(message);
-    // final smokeMatch = smokeRegex.firstMatch(message);
-
-    // double temperature = tempMatch != null ? double.parse(tempMatch.group(1)!) : 0;
-    // int smokeLevel = smokeMatch != null ? int.parse(smokeMatch.group(1)!) : 0;

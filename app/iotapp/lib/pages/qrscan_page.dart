@@ -17,7 +17,7 @@ class QRScanPage extends StatelessWidget {
           if (barcode.rawValue != null) {
             final String code = barcode.rawValue!;
             onScanned(code);
-            Navigator.pop(context); // đóng trang quét
+            Navigator.pop(context); 
           }
         },
       ),

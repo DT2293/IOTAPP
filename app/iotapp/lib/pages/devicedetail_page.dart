@@ -26,7 +26,6 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
   @override
   void dispose() {
     super.dispose();
-    // Không disconnect WebSocket tại đây nếu muốn giữ kết nối toàn cục
   }
 
   @override
@@ -69,13 +68,6 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                       Colors.red,
                       isDanger: true,
                     ),
-//                      SizedBox(height: 16),
-//                     _buildSensorCard(
-//   tr("fire_detected"),
-//   wsProvider.deviceData['flameDetected'] == true ? tr("yes") : tr("no"),
-//   Colors.deepOrange,
-//   isDanger: wsProvider.deviceData['flameDetected'] == true,
-// ),
                     Spacer(),
 
                     Row(
@@ -97,7 +89,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                             });
                             wsProvider.sendAlarmCommand(
                               value,
-                            ); // gửi lệnh bật/tắt
+                            ); 
                           },
                           activeColor: Colors.green,
                           inactiveThumbColor: Colors.red,

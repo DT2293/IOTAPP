@@ -19,8 +19,6 @@ Future<void> main() async {
   // Khởi tạo Firebase & Localization
   await Firebase.initializeApp();
   await EasyLocalization.ensureInitialized();
-
-  // Khởi chạy ứng dụng
   runApp(
       EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
@@ -50,7 +48,7 @@ class MyApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      navigatorKey: navigatorKey, // Để dùng context trong lớp không có BuildContext
+      navigatorKey: navigatorKey, 
       debugShowCheckedModeBanner: false,
       title: 'IoT App',
       theme: lightTheme,
