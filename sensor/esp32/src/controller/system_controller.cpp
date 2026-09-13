@@ -5,7 +5,7 @@
 #include "led_buzzer/led_buzzer_control.h"
 #include "mq2/mq_sensor.h"
 #include "dht22/dht22.h"
-#include "api_service.h"
+#include "http/api_service.h"
 
 static int currentGasAnalog = 0;
 static int currentGasDigital = 0;
