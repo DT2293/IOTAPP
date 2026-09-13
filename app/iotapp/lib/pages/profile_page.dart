@@ -63,9 +63,9 @@ class _ProfilePageState extends State<ProfilePage> {
     String newEmail = _emailController.text.trim();
     String newPhone = _phoneController.text.trim();
     if (newUsername.isEmpty || newEmail.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("empty_username_email"))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr("empty_username_email"))));
       return;
     }
 
@@ -73,9 +73,9 @@ class _ProfilePageState extends State<ProfilePage> {
     String? token = await _authService.getToken();
 
     if (userId == null || token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("no_userid_token"))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr("no_userid_token"))));
       return;
     }
 
@@ -123,10 +123,11 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text(tr("account_info")),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          ),
+          onPressed:
+              () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+              ),
         ),
       ),
       body: Padding(
@@ -172,18 +173,20 @@ class _ProfilePageState extends State<ProfilePage> {
               buildLabel("phone"),
               Card(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 2,
                 color: theme.cardColor,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
-                    children: phoneNumbers.map((phone) {
-                      return ListTile(
-                        leading: Icon(Icons.phone_android),
-                        title: Text(phone),
-                      );
-                    }).toList(),
+                    children:
+                        phoneNumbers.map((phone) {
+                          return ListTile(
+                            leading: Icon(Icons.phone_android),
+                            title: Text(phone),
+                          );
+                        }).toList(),
                   ),
                 ),
               ),
@@ -222,15 +225,16 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget buildTextField(
-      TextEditingController controller, String hintKey, IconData icon) {
+    TextEditingController controller,
+    String hintKey,
+    IconData icon,
+  ) {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         hintText: tr(hintKey),
         prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

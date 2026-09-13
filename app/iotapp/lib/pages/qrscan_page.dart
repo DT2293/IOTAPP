@@ -1,4 +1,3 @@
-// qr_scan_page.dart
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -17,7 +16,7 @@ class QRScanPage extends StatelessWidget {
           if (barcode.rawValue != null) {
             final String code = barcode.rawValue!;
             onScanned(code);
-            Navigator.pop(context); 
+            Navigator.pop(context);
           }
         },
       ),

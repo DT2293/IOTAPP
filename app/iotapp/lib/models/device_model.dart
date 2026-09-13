@@ -1,5 +1,5 @@
 class Device {
-  final String deviceId;  // đúng rồi, string
+  final String deviceId;  
   final String deviceName;
   final String location;
   final bool active;

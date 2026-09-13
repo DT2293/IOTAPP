@@ -1,13 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:iotapp/models/device_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class DeviceService {
   final Dio _dio;
 
   DeviceService()
-      : _dio = Dio(
-          BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api'),
-        ) {
+    : _dio = Dio(BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api')) {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -22,20 +21,19 @@ class DeviceService {
     );
   }
 
-Future<List<Device>> getDevicesByUserId(int userId) async {
-  try {
-    final response = await _dio.get('/devices/devices/$userId');
+  Future<List<Device>> getDevicesByUserId(int userId) async {
+    try {
+      final response = await _dio.get('/devices/devices/$userId');
+      final data = response.data['devices'] as List;
 
-    // response.data là Map<String, dynamic>
-    final data = response.data['devices'] as List;
-
-    return data.map((e) => Device.fromJson(e)).toList();
-  } catch (e) {
-    print('Lỗi khi lấy danh sách thiết bị: $e');
-    rethrow;
+      return data.map((e) => Device.fromJson(e)).toList();
+    } catch (e) {
+      print('Lỗi khi lấy danh sách thiết bị: $e');
+      rethrow;
+    }
   }
-}
-Future<Device?> getDeviceById(String deviceId) async {
+
+  Future<Device?> getDeviceById(String deviceId) async {
     try {
       final encodedId = Uri.encodeComponent(deviceId.trim());
       final response = await _dio.get('/devices/$encodedId');
@@ -57,7 +55,7 @@ Future<Device?> getDeviceById(String deviceId) async {
     }
   }
 
-    Future<void> updateDevice(String deviceId, Device device) async {
+  Future<void> updateDevice(String deviceId, Device device) async {
     try {
       final encodedId = Uri.encodeComponent(deviceId.trim());
       await _dio.put(
@@ -74,7 +72,7 @@ Future<Device?> getDeviceById(String deviceId) async {
     }
   }
 
-   Future<void> deleteDevice(String deviceId) async {
+  Future<void> deleteDevice(String deviceId) async {
     try {
       final encodedId = Uri.encodeComponent(deviceId.trim());
       await _dio.delete('/devices/$encodedId');

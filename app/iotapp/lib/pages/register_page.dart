@@ -86,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   'FIRE SENSE',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color:const Color.fromARGB(255, 85, 6, 79),
+                    color: const Color.fromARGB(255, 85, 6, 79),
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),
@@ -132,11 +132,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (value == null || value.isEmpty) {
                       return tr('phone_required');
                     }
-                    // Regex kiểm tra số điện thoại từ 9 đến 11 chữ số (có thể chỉnh)
                     if (!RegExp(r'^\d{9,11}$').hasMatch(value)) {
-                      return tr(
-                        'invalid_phone',
-                      ); // <-- Đổi key này cho đúng nghĩa
+                      return tr('invalid_phone');
                     }
                     return null;
                   },
@@ -264,7 +261,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     children: [
                       Text(
                         tr('already_have_account'),
-                        style: TextStyle(fontSize: 16, color: const Color.fromARGB(255, 85, 6, 79)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: const Color.fromARGB(255, 85, 6, 79),
+                        ),
                       ),
                       SizedBox(width: 5),
                       InkWell(
@@ -273,7 +273,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           tr('login'),
                           style: TextStyle(
                             fontSize: 16,
-                            color:const Color.fromARGB(255, 85, 6, 79),
+                            color: const Color.fromARGB(255, 85, 6, 79),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

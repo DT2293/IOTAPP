@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +27,10 @@ class HomeDrawer extends StatelessWidget {
           UserAccountsDrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [const Color.fromARGB(255, 79, 9, 82), const Color.fromARGB(121, 108, 9, 88)],
+                colors: [
+                  const Color.fromARGB(255, 79, 9, 82),
+                  const Color.fromARGB(121, 108, 9, 88),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

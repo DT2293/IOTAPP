@@ -9,7 +9,7 @@ class WebSocketProvider with ChangeNotifier {
   bool _isConnected = false;
   bool _isAuthorized = false;
   bool _relayState = false;
-  bool _alarmOn = false; 
+  bool _alarmOn = false;
 
   String? _deviceId;
   String? _token;
@@ -25,36 +25,40 @@ class WebSocketProvider with ChangeNotifier {
     _token = token;
     _deviceId = deviceId;
 
-  //_channel = WebSocketChannel.connect(Uri.parse("wss://dungtc.iothings.vn:3000"));
-    _channel = WebSocketChannel.connect(Uri.parse("wss://dungtc.iothings.vn/ws/"));
+    //_channel = WebSocketChannel.connect(Uri.parse("wss://dungtc.iothings.vn:3000"));
+    _channel = WebSocketChannel.connect(
+      Uri.parse("wss://dungtc.iothings.vn/ws/"),
+    );
 
-    _channel!.sink.add(jsonEncode({
-      "type": "authenticate",
-      "token": _token,
-    }));
+    _channel!.sink.add(jsonEncode({"type": "authenticate", "token": _token}));
 
-    _channel!.stream.listen((message) {
-      final data = jsonDecode(message);
-      print("Nhận dữ liệu từ WebSocket: $data");
-      if (data['type'] == "auth_success") {
-        _isConnected = true;
-        _isAuthorized = true;
-        notifyListeners();
-      } else if (data['type'] == "auth_error") {
-        _channel!.sink.close();
-      } else if (data['type'] == "sensordatas" && data['data']['deviceId'] == _deviceId) {
-        _deviceData = data['data'];
-        notifyListeners();
-      } else if (data['type'] == "relayStatus" && data['deviceId'] == _deviceId) {
-        _relayState = data['message'].contains("bật");
-        notifyListeners();
-      } else if (data['type'] == "alarm_command") {
-        _alarmOn = data['command'] == "alarm_on";
-        notifyListeners();
-      }
-    }, onError: (e) {
-      print("WebSocket error: $e");
-    });
+    _channel!.stream.listen(
+      (message) {
+        final data = jsonDecode(message);
+        print("Nhận dữ liệu từ WebSocket: $data");
+        if (data['type'] == "auth_success") {
+          _isConnected = true;
+          _isAuthorized = true;
+          notifyListeners();
+        } else if (data['type'] == "auth_error") {
+          _channel!.sink.close();
+        } else if (data['type'] == "sensordatas" &&
+            data['data']['deviceId'] == _deviceId) {
+          _deviceData = data['data'];
+          notifyListeners();
+        } else if (data['type'] == "relayStatus" &&
+            data['deviceId'] == _deviceId) {
+          _relayState = data['message'].contains("bật");
+          notifyListeners();
+        } else if (data['type'] == "alarm_command") {
+          _alarmOn = data['command'] == "alarm_on";
+          notifyListeners();
+        }
+      },
+      onError: (e) {
+        print("WebSocket error: $e");
+      },
+    );
   }
 
   void toggleRelay(bool newState) {
@@ -63,27 +67,29 @@ class WebSocketProvider with ChangeNotifier {
     _relayState = newState;
     notifyListeners();
 
-    _channel?.sink.add(jsonEncode({
-      "action": "toggleRelay",
-      "deviceId": _deviceId,
-      "state": newState ? "on" : "off"
-    }));
+    _channel?.sink.add(
+      jsonEncode({
+        "action": "toggleRelay",
+        "deviceId": _deviceId,
+        "state": newState ? "on" : "off",
+      }),
+    );
   }
 
- void sendAlarmCommand(bool turnOn) {
-  if (!_isConnected || !_isAuthorized || _deviceId == null) return;
+  void sendAlarmCommand(bool turnOn) {
+    if (!_isConnected || !_isAuthorized || _deviceId == null) return;
 
-  final command = {
-    "type": "alarm_command",
-    "command": turnOn ? "alarm_on" : "alarm_off",
-    "deviceId": _deviceId, 
-  };
+    final command = {
+      "type": "alarm_command",
+      "command": turnOn ? "alarm_on" : "alarm_off",
+      "deviceId": _deviceId,
+    };
 
-  _channel?.sink.add(jsonEncode(command));
+    _channel?.sink.add(jsonEncode(command));
 
-  _alarmOn = turnOn;
-  notifyListeners();
-}
+    _alarmOn = turnOn;
+    notifyListeners();
+  }
 
   void disconnect() {
     _channel?.sink.close();
@@ -92,6 +98,3 @@ class WebSocketProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-
-
-

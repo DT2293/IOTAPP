@@ -48,16 +48,14 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                 padding: EdgeInsets.all(16),
                 child: Column(
                   children: [
-                   _buildSensorCard(
+                    _buildSensorCard(
                       tr("temperature"),
-                     // "${wsProvider.deviceData['temperature']}°C ",
-                     "${wsProvider.deviceData['temperature'] ?? 0}°C",
+                      "${wsProvider.deviceData['temperature'] ?? 0}°C",
                       Colors.orange,
                     ),
                     SizedBox(height: 16),
                     _buildSensorCard(
                       tr("humidity"),
-                     // "${wsProvider.deviceData['humidity']}%",
                       "${wsProvider.deviceData['humidity'] ?? 0}°C",
                       Colors.blue,
                     ),
@@ -87,9 +85,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                             setState(() {
                               isAlarmOn = value;
                             });
-                            wsProvider.sendAlarmCommand(
-                              value,
-                            ); 
+                            wsProvider.sendAlarmCommand(value);
                           },
                           activeColor: Colors.green,
                           inactiveThumbColor: Colors.red,

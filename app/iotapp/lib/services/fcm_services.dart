@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:iotapp/main.dart';
@@ -6,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class FCMService {
   final Dio _dio = Dio();
-Future<void> addFcmToken(String fcmToken) async {
+  Future<void> addFcmToken(String fcmToken) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -15,18 +14,17 @@ Future<void> addFcmToken(String fcmToken) async {
       return;
     }
 
-    final language = EasyLocalization.of(navigatorKey.currentContext!)?.locale.languageCode ?? 'vi';
+    final language =
+        EasyLocalization.of(
+          navigatorKey.currentContext!,
+        )?.locale.languageCode ??
+        'vi';
 
     try {
       final response = await _dio.post(
         'https://dungtc.iothings.vn/api/fcm-token',
-        data: {
-          'fcmToken': fcmToken,
-          'language': language, 
-        },
-        options: Options(headers: {
-          'Authorization': 'Bearer $token',
-        }),
+        data: {'fcmToken': fcmToken, 'language': language},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
@@ -39,4 +37,3 @@ Future<void> addFcmToken(String fcmToken) async {
     }
   }
 }
-

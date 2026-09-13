@@ -15,12 +15,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Khởi tạo Firebase & Localization
   await Firebase.initializeApp();
   await EasyLocalization.ensureInitialized();
   runApp(
-      EasyLocalization(
+    EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
@@ -48,7 +46,7 @@ class MyApp extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
-      navigatorKey: navigatorKey, 
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'IoT App',
       theme: lightTheme,
@@ -61,5 +59,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-

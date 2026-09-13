@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-
 import 'package:intl/intl.dart';
 import 'package:iotapp/models/sensor_data.dart';
 
@@ -53,7 +52,6 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Trục Y cố định bên trái
               SizedBox(
                 width: 40,
                 child: LineChart(
@@ -90,8 +88,6 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
                   ),
                 ),
               ),
-
-              // Chart scroll được bên phải
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -209,21 +205,19 @@ class DailyTemperatureHumidityChart extends StatelessWidget {
             ],
           ),
         ),
-    const SizedBox(height: 20),
-                                              Text(
-                                                tr("staticscal"),
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
+        const SizedBox(height: 20),
+        Text(
+          tr("staticscal"),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 10),
-
-        // Legend nằm riêng biệt bên dưới, KHÔNG bị scroll
         SizedBox(
-          width: chartWidth + 40, // thêm 40 để bù chiều rộng trục Y cố định
+          width: chartWidth + 40,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(

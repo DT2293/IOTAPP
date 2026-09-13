@@ -9,99 +9,92 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class AuthService {
-final FirebaseMessaging _fcm = FirebaseMessaging.instance;
- final Dio _dio = Dio(BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api/auth'));
- // final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
+  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  final Dio _dio = Dio(
+    BaseOptions(baseUrl: 'https://dungtc.iothings.vn/api/auth'),
+  );
+  // final Dio _dio =  Dio(BaseOptions(baseUrl: 'http://192.168.1.14:3000/api/auth'));
   final FCMService fcmService = FCMService();
 
-Future<String?> login(String usernameOrEmail, String password) async {
-  final prefs = await SharedPreferences.getInstance();
-  final FirebaseMessaging messaging = FirebaseMessaging.instance;
+  Future<String?> login(String usernameOrEmail, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    final FirebaseMessaging messaging = FirebaseMessaging.instance;
 
-  try {
-    final response = await _dio.post(
-      '/login',
-      data: {
-        "username": usernameOrEmail,
-        "email": usernameOrEmail,
-        "password": password,
-      },
-    ).timeout(const Duration(seconds: 5));
+    try {
+      final response = await _dio
+          .post(
+            '/login',
+            data: {
+              "username": usernameOrEmail,
+              "email": usernameOrEmail,
+              "password": password,
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
-    if (response.statusCode == 200) {
-      final token = response.data['token'];
-      final user = response.data['user'] as Map<String, dynamic>;
-      final int userId = user['userId'];
+      if (response.statusCode == 200) {
+        final token = response.data['token'];
+        final user = response.data['user'] as Map<String, dynamic>;
+        final int userId = user['userId'];
+        await prefs.setString('token', token);
+        await prefs.setString('user', jsonEncode(user));
+        await prefs.setInt('userId', userId);
 
-      // Lưu thông tin user và token vào SharedPreferences
-      await prefs.setString('token', token);
-      await prefs.setString('user', jsonEncode(user));
-      await prefs.setInt('userId', userId);
+        final String? currentFcmToken = prefs.getString('fcmToken');
+        final String? newFcmToken = await messaging.getToken();
+        if (newFcmToken != null && newFcmToken != currentFcmToken) {
+          FCMService fcmService = FCMService();
+          await fcmService.addFcmToken(newFcmToken);
+          await prefs.setString('fcmToken', newFcmToken);
+        }
+        await FCMInitializer().init();
 
-      // Lấy FCM token hiện tại và FCM token mới từ Firebase
-      final String? currentFcmToken = prefs.getString('fcmToken');
-      final String? newFcmToken = await messaging.getToken();
-
-      // Nếu FCM token thay đổi hoặc lần đầu -> cập nhật server
-      if (newFcmToken != null && newFcmToken != currentFcmToken) {
-        // Tạo instance FCMService và gọi addFcmToken
-        FCMService fcmService = FCMService();
-        await fcmService.addFcmToken(newFcmToken); // Thêm FCM token vào server
-        await prefs.setString('fcmToken', newFcmToken);
+        return null;
       }
-
-      // Khởi tạo FCM listener
-      await FCMInitializer().init(); 
-
-      return null; 
+      return response.data['error'] ?? 'Đăng nhập thất bại';
+    } on DioException catch (e) {
+      return e.response?.data['error'] ?? 'Lỗi từ server';
+    } on TimeoutException {
+      return 'Server không phản hồi, vui lòng thử lại';
+    } catch (err) {
+      return 'Lỗi không xác định';
     }
-
-    // Nếu login lỗi (401 hoặc khác)
-    return response.data['error'] ?? 'Đăng nhập thất bại';
-  } on DioException catch (e) {
-    return e.response?.data['error'] ?? 'Lỗi từ server';
-  } on TimeoutException {
-    return 'Server không phản hồi, vui lòng thử lại';
-  } catch (err) {
-    return 'Lỗi không xác định';
-  }
-}
-
-Future<bool> isLoggedIn() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token');
-  return token != null && token.isNotEmpty;
-}
-Future<bool> autoLogin() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token');
-  final userId = prefs.getInt('userId');
-
-  if (token != null && userId != null) {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    final savedFcmToken = prefs.getString('fcmToken');
-
-    if (fcmToken != null && fcmToken != savedFcmToken) {
-      FCMService fcmService = FCMService();
-      await fcmService.addFcmToken(fcmToken); // Cập nhật FCM token lên server
-      await prefs.setString('fcmToken', fcmToken); // Lưu FCM token vào SharedPreferences
-    }
-
-    // Khởi tạo FCM listener
-    await FCMInitializer().init();
-
-    return true;
   }
 
-  return false; 
-}
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    return token != null && token.isNotEmpty;
+  }
 
+  Future<bool> autoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final userId = prefs.getInt('userId');
+
+    if (token != null && userId != null) {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      final savedFcmToken = prefs.getString('fcmToken');
+
+      if (fcmToken != null && fcmToken != savedFcmToken) {
+        FCMService fcmService = FCMService();
+        await fcmService.addFcmToken(fcmToken);
+        await prefs.setString('fcmToken', fcmToken);
+      }
+      await FCMInitializer().init();
+
+      return true;
+    }
+
+    return false;
+  }
 
   Future<String?> sendOtp(String email) async {
     try {
-      Response response = await _dio.post('/forgot-password', data: {
-        "email": email,
-      });
+      Response response = await _dio.post(
+        '/forgot-password',
+        data: {"email": email},
+      );
 
       if (response.statusCode == 200) {
         return null;
@@ -120,10 +113,10 @@ Future<bool> autoLogin() async {
 
   Future<Map<String, dynamic>?> verifyOtp(String email, String otp) async {
     try {
-      Response response = await _dio.post('/verify-otp', data: {
-        "email": email,
-        "otp": otp,
-      });
+      Response response = await _dio.post(
+        '/verify-otp',
+        data: {"email": email, "otp": otp},
+      );
 
       if (response.statusCode == 200) {
         return response.data;
@@ -137,13 +130,12 @@ Future<bool> autoLogin() async {
     }
   }
 
-
   Future<String?> resetPassword(String email, String newPassword) async {
     try {
-      final response = await _dio.post('/reset-password', data: {
-        'email': email,
-        'newPassword': newPassword,
-      });
+      final response = await _dio.post(
+        '/reset-password',
+        data: {'email': email, 'newPassword': newPassword},
+      );
       return null;
     } catch (e) {
       return _handleError(e);
@@ -151,40 +143,38 @@ Future<bool> autoLogin() async {
   }
 
   String _handleError(Object error) {
-  if (error is DioException) {
-    final data = error.response?.data;
+    if (error is DioException) {
+      final data = error.response?.data;
 
-    if (data is Map<String, dynamic>) {
-      return data['message'] ?? error.message ?? "Đã xảy ra lỗi không xác định";
-    } else if (data is String) {
-      return data;
+      if (data is Map<String, dynamic>) {
+        return data['message'] ??
+            error.message ??
+            "Đã xảy ra lỗi không xác định";
+      } else if (data is String) {
+        return data;
+      }
+
+      return error.message ?? "Đã xảy ra lỗi không xác định";
     }
 
-    return error.message ?? "Đã xảy ra lỗi không xác định";
+    return "Đã xảy ra lỗi không xác định";
   }
 
-  return "Đã xảy ra lỗi không xác định";
-}
-
-
   Future<String?> updatePassword(
-      String oldPassword, String newPassword, int userId, String token) async {
+    String oldPassword,
+    String newPassword,
+    int userId,
+    String token,
+  ) async {
     try {
       final response = await _dio.put(
         '/updatepassword/$userId',
-        data: {
-          "oldPassword": oldPassword,
-          "newPassword": newPassword,
-        },
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $token",
-          },
-        ),
+        data: {"oldPassword": oldPassword, "newPassword": newPassword},
+        options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
       if (response.statusCode == 200) {
-        return null; // null nghĩa là thành công
+        return null;
       } else {
         return response.data['error'] ?? "Lỗi khi đổi mật khẩu!";
       }
@@ -199,7 +189,11 @@ Future<bool> autoLogin() async {
   }
 
   Future<String?> register(
-      String username, String email,String phonenumber ,String password) async {
+    String username,
+    String email,
+    String phonenumber,
+    String password,
+  ) async {
     try {
       final response = await _dio.post(
         '/register',
@@ -221,26 +215,22 @@ Future<bool> autoLogin() async {
       if (e.response != null) {
         return e.response?.data["error"] ?? "Đăng ký thất bại!";
       }
-      // Trả về lỗi khi kết nối hoặc lỗi không xác định
+
       return "Lỗi kết nối: ${e.message}";
     } catch (e) {
-      // Trả về lỗi không xác định
       return "Lỗi không xác định: $e";
     }
   }
 
-Future<bool> addPhoneNumber(String phoneNumber,String token) async {
+  Future<bool> addPhoneNumber(String phoneNumber, String token) async {
     try {
-
       if (token == null) {
         return false;
       }
-      int? userId = await getUserId(); 
+      int? userId = await getUserId();
       final response = await _dio.patch(
         '/add-phone/$userId',
-        data: {
-         "newPhone": phoneNumber,
-        },
+        data: {"newPhone": phoneNumber},
         options: Options(
           headers: {
             "Authorization": "Bearer $token",
@@ -254,21 +244,26 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
       print("Lỗi thêm số điện thoại: ${e.response?.data ?? e.message}");
       return false;
     }
-}
-  Future<bool> updateUser(String username, String email,String phonenumber ,String token) async {
-    int? userId = await getUserId(); // 🔍 Lấy userId từ SharedPreferences
+  }
+
+  Future<bool> updateUser(
+    String username,
+    String email,
+    String phonenumber,
+    String token,
+  ) async {
+    int? userId = await getUserId();
 
     if (userId == null) {
       return false;
     }
 
     try {
-
       final response = await _dio.put(
         '/update/$userId',
         data: {
           "username": username,
-          "phonenumber":phonenumber,
+          "phonenumber": phonenumber,
           "email": email,
         },
         options: Options(
@@ -289,7 +284,7 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
   Future<int?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    String? token = prefs.getString('token'); // Lấy token từ SharedPreferences
+    String? token = prefs.getString('token');
     if (token == null) {
       print(" Không tìm thấy token!");
       return null;
@@ -297,10 +292,9 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
 
     try {
       final jwt = JWT.decode(token);
-      int? userId = jwt.payload['userId'] as int?; // Lấy userId kiểu int
+      int? userId = jwt.payload['userId'] as int?;
       return userId;
     } catch (e) {
-
       return null;
     }
   }
@@ -314,8 +308,7 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString('user');
 
-    print(
-        "Stored user data: $userData"); 
+    print("Stored user data: $userData");
     if (userData != null) {
       return jsonDecode(userData);
     }
@@ -329,22 +322,16 @@ Future<bool> addPhoneNumber(String phoneNumber,String token) async {
     if (userData != null) {
       Map<String, dynamic> userMap = jsonDecode(userData);
       List<String> devices = List<String>.from(userMap['devices'] ?? []);
-      print("User devices: $devices"); 
+      print("User devices: $devices");
       return devices;
     }
     return [];
   }
 
   Future<void> logout() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  // Xóa token và user khỏi prefs
-  await prefs.remove('token');
-  await prefs.remove('user');
-
-  // Xóa token FCM (huỷ đăng ký nhận notification)
-  await _fcm.deleteToken();
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    await prefs.remove('user');
+    await _fcm.deleteToken();
+  }
 }
-}
-

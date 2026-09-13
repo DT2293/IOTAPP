@@ -23,7 +23,6 @@ class _SplashPageState extends State<SplashPage> {
     final userId = prefs.getInt('userId');
 
     if (token != null && userId != null) {
-      // Đã đăng nhập -> vào Home
       Future.delayed(const Duration(milliseconds: 500), () {
         Navigator.pushReplacement(
           context,
@@ -31,7 +30,6 @@ class _SplashPageState extends State<SplashPage> {
         );
       });
     } else {
-      // Chưa đăng nhập
       Future.delayed(const Duration(milliseconds: 500), () {
         Navigator.pushReplacement(
           context,

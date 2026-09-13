@@ -15,20 +15,21 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
 
     return PopupMenuButton<Locale>(
       icon: const Icon(Icons.language),
-      tooltip: tr("change_language"), 
+      tooltip: tr("change_language"),
       onSelected: (locale) {
         context.setLocale(locale);
       },
-      itemBuilder: (BuildContext context) => [
-        PopupMenuItem(
-          value: const Locale('en', 'US'),
-          child: Text("English"),
-        ),
-        PopupMenuItem(
-          value: const Locale('vi', 'VN'),
-          child: Text("Tiếng Việt"),
-        ),
-      ],
+      itemBuilder:
+          (BuildContext context) => [
+            PopupMenuItem(
+              value: const Locale('en', 'US'),
+              child: Text("English"),
+            ),
+            PopupMenuItem(
+              value: const Locale('vi', 'VN'),
+              child: Text("Tiếng Việt"),
+            ),
+          ],
     );
   }
 }

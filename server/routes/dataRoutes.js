@@ -1,21 +1,22 @@
-
 const express = require("express");
 const router = express.Router();
 const SensorData = require("../models/sensordata");
 const authMiddleware = require("../utils/authMiddleware");
-router.get('/sensordata/:deviceId', authMiddleware, async (req, res) => {
-  const deviceId = req.params.deviceId;
+const asyncHandler = require("../utils/asyncHandler");
 
-  try {
-    const records = await SensorData.find({ deviceId })
+router.get(
+  "/sensordata/:deviceId",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const records = await SensorData.find({ deviceId: req.params.deviceId })
       .sort({ timestamp: 1 })
-      .select('averageTemperature averageHumidity averageSmokeLevel flameDetected date -_id'); 
+      .select(
+        "averageTemperature averageHumidity averageSmokeLevel flameDetected date -_id",
+      )
+      .lean();
 
     res.json(records);
-  } catch (error) {
-    console.error('❌ Lỗi lấy data:', error);
-    res.status(500).json({ message: 'Lỗi server khi lấy dữ liệu' });
-  }
-});
+  }),
+);
 
 module.exports = router;

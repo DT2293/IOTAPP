@@ -1,26 +1,20 @@
-// sendNotification.js
 const admin = require("firebase-admin");
 
 if (!admin.apps.length) {
-  const serviceAccount = require("../fcm_services/messapp-9d1bc-firebase-adminsdk-fbsvc-0d5f2bf8f4.json");
-
   try {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  console.log("Firebase Admin SDK initialized successfully.");
-} catch (error) {
-  console.error("Firebase Admin SDK initialization failed:", error);
-}
+    const serviceAccount = require("./messapp-9d1bc-firebase-adminsdk-fbsvc-0d5f2bf8f4.json");
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  } catch (error) {
+    console.error("Lỗi khởi tạo Firebase Admin:", error.message);
+  }
 }
 
 async function sendNotificationToDevice(fcmToken, title, body, data = {}) {
   const message = {
     token: fcmToken,
-    notification: {
-      title,
-      body,
-    },
+    notification: { title, body },
     data,
     android: {
       priority: "high",
@@ -34,10 +28,10 @@ async function sendNotificationToDevice(fcmToken, title, body, data = {}) {
   };
 
   try {
-    const response = await admin.messaging().send(message);
+    await admin.messaging().send(message);
   } catch (error) {
-    console.error("❌ Lỗi khi gửi thông báo:", error.message);
+    console.error(`Lỗi gửi FCM Token (${fcmToken}):`, error.message);
   }
 }
 
-module.exports = { sendNotificationToDevice };  
+module.exports = { sendNotificationToDevice };

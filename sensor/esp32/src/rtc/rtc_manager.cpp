@@ -5,15 +5,19 @@
 RTC_DS3231 rtc;
 TwoWire I2C_DS3231 = TwoWire(1);
 
-void initRTC() {
+void initRTC()
+{
   I2C_DS3231.begin(SDA_DS3231, SCL_DS3231, 100000);
-  if (!rtc.begin(&I2C_DS3231)) {
+  if (!rtc.begin(&I2C_DS3231))
+  {
     Serial.println("Không tìm thấy DS3231!");
-    while (1);
+    while (1)
+      ;
   }
-  rtc.adjust(DateTime(2025, 6, 06, 13, 29, 30)); // Chỉ chạy 1 lần nếu cần
+  rtc.adjust(DateTime(2025, 6, 06, 13, 29, 30));
 }
 
-DateTime getCurrentTime() {
+DateTime getCurrentTime()
+{
   return rtc.now();
 }

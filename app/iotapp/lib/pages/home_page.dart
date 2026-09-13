@@ -40,7 +40,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Khởi tạo dữ liệu người dùng và thiết bị
       await _initializeUserDataAndDevices();
       await loadDevices();
     });
@@ -181,9 +180,9 @@ class _HomePageState extends State<HomePage> {
     );
     setState(() {
       if (_expandedDeviceId == device.deviceId) {
-        _expandedDeviceId = null; // Đóng lại
+        _expandedDeviceId = null;
       } else {
-        _expandedDeviceId = device.deviceId; // Mở ra
+        _expandedDeviceId = device.deviceId;
       }
     });
   }
@@ -194,7 +193,6 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(builder: (_) => const AddDevicePage()),
     );
     if (added == true) {
-      // Nếu trang AddDevicePage trả về true khi thêm thành công
       await loadDevices();
     }
   }
@@ -393,7 +391,7 @@ class _HomePageState extends State<HomePage> {
                                                   ),
                                                 ),
                                               ),
-                                          
+
                                               const SizedBox(height: 20),
                                               if (_expandedDeviceId ==
                                                       device.deviceId &&

@@ -30,12 +30,13 @@ class MessageProvider extends ChangeNotifier {
     final data = prefs.getStringList('messages') ?? [];
     final now = DateTime.now();
 
-    _messages = data
-        .map((e) => Message.fromJson(json.decode(e)))
-        .where((msg) => now.difference(msg.timestamp).inHours < 24)
-        .toList();
+    _messages =
+        data
+            .map((e) => Message.fromJson(json.decode(e)))
+            .where((msg) => now.difference(msg.timestamp).inHours < 24)
+            .toList();
 
-    _saveMessages(); // dọn những tin đã quá hạn
+    _saveMessages();
     notifyListeners();
   }
 
